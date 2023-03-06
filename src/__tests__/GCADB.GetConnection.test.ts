@@ -3,10 +3,13 @@ import env from "../env-vars.config"
 
 
 test("Connect", async () => {
-    let pass: boolean;
     try {
         let con = await GetConnection(env.SQL);
-        expect(con).toBeTruthy();
+        if (con) {
+            expect(con.con.connected).toBeTruthy();
+        } else {
+            expect(false).toBeTruthy();
+        }
     } catch (err) {
         console.log(err);
         expect(false).toBeTruthy();
