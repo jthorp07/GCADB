@@ -9,7 +9,7 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
     }
 
     if (!con.connected) {
-        throw new NotConnectedError();
+        throw new NotConnectedError("CreateGuild");
     }
 
     let req: Request;
@@ -32,7 +32,7 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
         case 1:
             err = new NullArgError(["GuildId"], "CreateGuild");
         case 2:
-            err = new DoesNotExistError();
+            err = new DoesNotExistError("CreateGuild");
     }
 }
 

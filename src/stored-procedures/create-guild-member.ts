@@ -1,8 +1,13 @@
 import { ConnectionPool, Transaction, Request } from "mssql";
-import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
+import { NullArgError, DoesNotExistError, AlreadyExistsError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 
 /**
+ * Writes a Discord GuildMember's information on the GCA Database.
+ * A GuildMember represents a Discord user and their unique profile
+ * within a target Discord guild.
+ * 
+ * Returns void on success; BaseDBError on failure
  * 
  * @param con ConnectionPool connected to the GCA Database
  * @param guildId Discord ID of target guild
@@ -55,9 +60,15 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
         case 1:
             retErr = new NullArgError(['GuildId', 'UserId', 'GuildDisplayName', 'IsOwner'], 'CreateGuildMember');
             break;
+        case 2:
+            retErr = new DoesNotExistError('CreateGuildMember');
+            break;
         case 3:
-            retErr;
+            retErr = new AlreadyExistsError('CreateGuildMember');
+            break;
     }
+
+    if (retErr) return retErr;
 
 }
 
