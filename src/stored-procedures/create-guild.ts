@@ -26,7 +26,8 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
         .execute("CreateGuild");
 
     let ret: number = result.returnValue;
-    let err: BaseDBError;
+    let err: BaseDBError | null;
+    err = null;
 
     switch (ret) {
         case 1:
@@ -34,6 +35,8 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
         case 2:
             err = new DoesNotExistError("CreateGuild");
     }
+
+    if (err) return err;
 }
 
 export default createGuild;

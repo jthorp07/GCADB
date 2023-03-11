@@ -36,7 +36,8 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
 
     let ret: number = result.returnValue;
 
-    let err: BaseDBError;
+    let err: BaseDBError | null;
+    err = null;
     switch (ret) {
         case 1:
             err = new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");

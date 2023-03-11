@@ -54,7 +54,8 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
         .execute('CreateGuildMember');
 
     let retVal = result.returnValue;
-    let retErr: BaseDBError;
+    let retErr: BaseDBError | null;
+    retErr = null;
 
     switch (retVal) {
         case 1:
