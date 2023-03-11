@@ -1,4 +1,4 @@
-import { ConnectionPool } from "mssql";
+import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures"
 
 class GCADB {
@@ -46,14 +46,52 @@ class GCADB {
 
   /*
     =======================================================================================================
+    Utility Methods
+    =======================================================================================================
+  */
+  
+  /**
+   * Begins a transaction against the database
+   * 
+   * @param onError Error handler in case of an error when beginning the transaction
+   * @returns 
+   */
+  public async beginTransaction(onError: (error: Error) => Promise<void>) {
+    let trans = await this.con.transaction().begin().catch(async (err) => await onError(err));
+
+    if (trans) {
+      // DBMS error handling
+      let rolledBack = false;
+      trans.on("rollback", (aborted) => {
+        if (aborted) {
+          console.log("This rollback was triggered by SQL server");
+        }
+        rolledBack = true;
+        return;
+      });
+    }
+
+    return trans;
+  }
+
+  public async commitTransaction(transaction: Transaction,) {
+
+    await transaction.commit().catch(err => {
+      return err;
+    });
+
+  }
+
+  /*
+    =======================================================================================================
     Stored Procedure Calls
     =======================================================================================================
   */
 
   /**
-   * Logs a newly created Discord channel in the GCA Database
+   * Writes a newly created Discord channel to the GCA Database.
+   * Returns void on success; BaseDBError on failure
    * 
-   * @param con A ConnectionPool that is connected to the GCA Database
    * @param guildId The ID of the Discord server the request is coming from
    * @param channelId The ID of the created Discord channel
    * @param channelName The name of the created Discord channel
@@ -61,10 +99,16 @@ class GCADB {
    * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
    * @param trans A Transaction on the GCA Database, if this request should be part of one
    */
-  public createChannel = Procedures.createChannel;
+  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: string, triggerable: boolean, transaction?: Transaction) {
+    return Procedures.createChannel(this.con, guildId, channelId, channelName, channelType, triggerable, transaction);
+  };
 
 
   public createGuild = Procedures.createGuild;
+
+  public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, transaction?: Transaction) {
+    return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction); 
+  } 
 
 }
 

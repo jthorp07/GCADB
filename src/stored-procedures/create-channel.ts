@@ -1,8 +1,9 @@
 import { ConnectionPool, Transaction, Request } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError } from "../errors";
+import BaseDBError from "../errors/base-db-error";
 
 /**
- * Logs a newly created Discord channel in the GCA Database
+ * Writes a newly created Discord channel to the GCA Database
  * 
  * @param con A ConnectionPool that is connected to the GCA Database
  * @param guildId The ID of the Discord server the request is coming from
@@ -12,7 +13,7 @@ import { NullArgError, DoesNotExistError, NotConnectedError } from "../errors";
  * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
  * @param trans A Transaction on the GCA Database, if this request should be part of one
  */
-async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: string, triggerable?: number, trans?: Transaction) {
+async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: string, triggerable?: boolean, trans?: Transaction) {
 
     if (!con.connected) {
         throw new NotConnectedError();
@@ -35,12 +36,15 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
 
     let ret: number = result.returnValue;
 
+    let err: BaseDBError;
     switch (ret) {
         case 1:
-            throw new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
+            err = new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
         case 2:
-            throw new DoesNotExistError();
+            err = new DoesNotExistError();
     }
+
+    if (err) return err;
 }
 
 export default createChannel;

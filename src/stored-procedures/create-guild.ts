@@ -1,5 +1,6 @@
 import { ConnectionPool, Transaction, Request } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
+import BaseDBError from "../errors/base-db-error";
 
 async function createGuild(con: ConnectionPool, guildId: string, guildName: string, trans?: Transaction) {
 
@@ -25,12 +26,13 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
         .execute("CreateGuild");
 
     let ret: number = result.returnValue;
+    let err: BaseDBError;
 
     switch (ret) {
         case 1:
-            throw new NullArgError(["GuildId"], "CreateGuild");
+            err = new NullArgError(["GuildId"], "CreateGuild");
         case 2:
-            throw new DoesNotExistError();
+            err = new DoesNotExistError();
     }
 }
 
