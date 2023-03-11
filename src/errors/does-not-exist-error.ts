@@ -2,8 +2,8 @@ import BaseDBError from "./base-db-error";
 
 class DoesNotExistError extends BaseDBError {
 
-    constructor() {
-        super(`The data you supplied does not refer to any existing data on the database!`, 2);
+    constructor(proc: string) {
+        super(`The data supplied for procedure '${proc}' attempts to reference nonexistent data in the database`, 2);
         Object.setPrototypeOf(this, DoesNotExistError.prototype);
     }
 

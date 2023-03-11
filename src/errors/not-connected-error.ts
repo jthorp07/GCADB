@@ -2,8 +2,8 @@ import BaseDBError from "./base-db-error";
 
 class NotConnectedError extends BaseDBError {
 
-    constructor() {
-        super(`ConnectionPool not connected`, -99);
+    constructor(proc: string) {
+        super(`ConnectionPool not connected when calling procedure '${proc}'`, -99);
         Object.setPrototypeOf(this, NotConnectedError.prototype);
     }
 

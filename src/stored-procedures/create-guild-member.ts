@@ -2,6 +2,18 @@ import { ConnectionPool, Transaction, Request } from "mssql";
 import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 
+/**
+ * 
+ * @param con ConnectionPool connected to the GCA Database
+ * @param guildId Discord ID of target guild
+ * @param userId Discord ID of target Discord user
+ * @param isOwner True if target Discord user is the owner of the target Guild
+ * @param username Username of target Discord user
+ * @param guildDisplayName Display name of target Discord user in target guild
+ * @param valorantRankRoleName Likely to be deprecated
+ * @param trans Database transaction to run this request against
+ * @returns 
+ */
 async function createGuildMember(con: ConnectionPool, guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, trans?: Transaction) {
 
     // Validate
@@ -18,7 +30,7 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
     }
 
     if (!con.connected) {
-        return new NotConnectedError();
+        return new NotConnectedError("CreateGuildMember");
     }
 
     let req: Request;

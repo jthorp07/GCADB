@@ -106,6 +106,23 @@ class GCADB {
 
   public createGuild = Procedures.createGuild;
 
+  /**
+   * Writes a Discord GuildMember's information on the GCA Database.
+   * A GuildMember represents a Discord user and their unique profile
+   * within a target Discord guild.
+   * 
+   * Returns void on success; BaseDBError on failure
+   * 
+   * @param con ConnectionPool connected to the GCA Database
+   * @param guildId Discord ID of target guild
+   * @param userId Discord ID of target Discord user
+   * @param isOwner True if target Discord user is the owner of the target Guild
+   * @param username Username of target Discord user
+   * @param guildDisplayName Display name of target Discord user in target guild
+   * @param valorantRankRoleName Likely to be deprecated
+   * @param trans Database transaction to run this request against
+   * @returns 
+   */
   public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, transaction?: Transaction) {
     return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction); 
   } 

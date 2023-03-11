@@ -16,7 +16,7 @@ import BaseDBError from "../errors/base-db-error";
 async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: string, triggerable?: boolean, trans?: Transaction) {
 
     if (!con.connected) {
-        throw new NotConnectedError();
+        throw new NotConnectedError("CreateChannel");
     }
 
     let req: Request;
@@ -41,7 +41,7 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
         case 1:
             err = new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
         case 2:
-            err = new DoesNotExistError();
+            err = new DoesNotExistError("CreateChannel");
     }
 
     if (err) return err;
