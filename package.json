@@ -23,5 +23,6 @@
   },
   "files": [
     "lib/**/*"
-  ]
+  ],
+  "type":"module"
 }

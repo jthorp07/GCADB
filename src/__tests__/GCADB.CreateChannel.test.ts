@@ -1,11 +1,11 @@
-import GetConnection from "../index"
+import {getConnection} from "../index"
 import env from "../env-vars.config"
 
 test("Simple", async () => {
     try {
 
         // Get a connection
-        let db = await GetConnection(env.SQL);
+        let db = await getConnection(env.SQL);
         if (!db) {
             expect(false).toBe(true);
             return;

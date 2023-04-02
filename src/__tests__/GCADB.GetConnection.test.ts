@@ -1,10 +1,10 @@
-import GetConnection from "../index"
+import {getConnection} from "../index"
 import env from "../env-vars.config"
 
 
 test("Connect", async () => {
     try {
-        let con = await GetConnection(env.SQL);
+        let con = await getConnection(env.SQL);
         if (con) {
             expect(con.con.connected).toBeTruthy();
         } else {

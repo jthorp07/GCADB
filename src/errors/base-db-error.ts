@@ -1,4 +1,4 @@
-class BaseDBError {
+export class BaseDBError {
 
     message: string;
     code: number;

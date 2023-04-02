@@ -1,5 +1,8 @@
 import { ConnectionPool, Transaction } from "mssql";
-import Procedures from "./stored-procedures"
+import Procedures from "./stored-procedures";
+import NonProcedures from "./non-procedure-functions";
+import { BaseDBError } from "./errors/base-db-error";
+import env from "./env-vars.config";
 
 class GCADB {
 
@@ -49,7 +52,7 @@ class GCADB {
     Utility Methods
     =======================================================================================================
   */
-  
+
   /**
    * Begins a transaction against the database
    * 
@@ -79,7 +82,6 @@ class GCADB {
     await transaction.commit().catch(err => {
       return err;
     });
-
   }
 
   /*
@@ -104,7 +106,9 @@ class GCADB {
   };
 
 
-  public createGuild = Procedures.createGuild;
+  public async createGuild(guildId: string, guildName: string, trans?: Transaction) {
+    return Procedures.createGuild(this.con, guildId, guildName, trans);
+  }
 
   /**
    * Writes a Discord GuildMember's information on the GCA Database.
@@ -124,11 +128,35 @@ class GCADB {
    * @returns 
    */
   public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, transaction?: Transaction) {
-    return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction); 
-  } 
+    return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction);
+  }
+
+
+  public async createQueue(guildId: string, hostId: string, queueType: string, queueId: number, trans?: Transaction) {
+    return Procedures.createQueue(this.con, guildId, hostId, queueType, queueId, trans);
+  }
+
+  /*
+    =======================================================================================================
+    Non-Stored Procedure Calls
+    =======================================================================================================
+  */
+
+  /**
+   * Deletes a guild from the GCA Database. A guild represents
+   * a Discord server.
+   * 
+   * Returns node-mssql.IProcedureResult<any> on success; BaseDBError on failure
+   * 
+   * @param guildId Discord ID of target guild
+   * @param trans Database transaction to run this request against
+   * @returns 
+   */
+  public async deleteGuild(guildId: string, trans?: Transaction) {
+    return NonProcedures.deleteGuild(this.con, guildId, trans);
+  }
 
 }
 
-
-
-export default GCADB.GetConnection;
+export { BaseDBError, env }
+export const getConnection = GCADB.GetConnection;

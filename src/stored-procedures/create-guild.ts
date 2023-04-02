@@ -4,8 +4,8 @@ import BaseDBError from "../errors/base-db-error";
 
 async function createGuild(con: ConnectionPool, guildId: string, guildName: string, trans?: Transaction) {
 
-    if (guildName.length > 32 || guildName.length < 3) {
-        throw new DataConstraintError(["GuildName"],["Must be greater than 2 and less than 32 characters in length"],"CreateGuild");
+    if (guildName.length > 32 || guildName.length < 3 || guildId.length > 21 || guildId.length < 17) {
+        throw new DataConstraintError(["GuildName", "GuildId"],["Must be greater than 2 and less than 33 characters in length", "Must be greater than 17 and less than 22 characters in length"],"CreateGuild");
     }
 
     if (!con.connected) {
