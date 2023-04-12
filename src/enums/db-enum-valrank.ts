@@ -1,4 +1,4 @@
-enum ValorantRank {
+export enum ValorantRank {
     Unranked='UNRANKED',
     IronOne='IRON_ONE',
     IronTwo='IRON_TWO',
