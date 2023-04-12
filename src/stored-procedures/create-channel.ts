@@ -1,5 +1,6 @@
 import { ConnectionPool, Transaction, Request } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError } from "../errors";
+import { DiscordChannelType } from "../enums";
 import BaseDBError from "../errors/base-db-error";
 
 /**
@@ -13,7 +14,7 @@ import BaseDBError from "../errors/base-db-error";
  * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
  * @param trans A Transaction on the GCA Database, if this request should be part of one
  */
-async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: string, triggerable?: boolean, trans?: Transaction) {
+async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable?: boolean, trans?: Transaction) {
 
     if (!con.connected) {
         throw new NotConnectedError("CreateChannel");

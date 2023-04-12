@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures";
 import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
+import { DiscordChannelType } from "./enums";
 import env from "./env-vars.config";
 
 class GCADB {
@@ -77,11 +78,22 @@ class GCADB {
     return trans;
   }
 
+  /**
+   * Commits a transaction to the database
+   * 
+   * @param transaction 
+   */
   public async commitTransaction(transaction: Transaction,) {
 
-    await transaction.commit().catch(err => {
-      return err;
-    });
+    transaction.commit()
+
+  }
+
+  /**
+   * Closes the connection to the database for graceful exit
+   */
+  public async closeConnection() {
+    await this.con.close();
   }
 
   /*
@@ -101,7 +113,7 @@ class GCADB {
    * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
    * @param trans A Transaction on the GCA Database, if this request should be part of one
    */
-  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: string, triggerable: boolean, transaction?: Transaction) {
+  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {
     return Procedures.createChannel(this.con, guildId, channelId, channelName, channelType, triggerable, transaction);
   };
 
@@ -132,8 +144,12 @@ class GCADB {
   }
 
 
-  public async createQueue(guildId: string, hostId: string, queueType: string, queueId: number, trans?: Transaction) {
-    return Procedures.createQueue(this.con, guildId, hostId, queueType, queueId, trans);
+  public async createQueue(guildId: string, hostId: string, queueType: string, queueId: number, transaction?: Transaction) {
+    return Procedures.createQueue(this.con, guildId, hostId, queueType, queueId, transaction);
+  }
+
+  public async deleteChannelById(guildId: string, channelId: string, transaction?: Transaction) {
+    return Procedures.deleteChannelById(this.con, guildId, channelId, transaction);
   }
 
   /*
