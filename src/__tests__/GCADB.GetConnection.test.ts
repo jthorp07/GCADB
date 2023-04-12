@@ -7,6 +7,7 @@ test("Connect", async () => {
         let con = await getConnection(env.SQL);
         if (con) {
             expect(con.con.connected).toBeTruthy();
+            await con.closeConnection();
         } else {
             expect(false).toBeTruthy();
         }

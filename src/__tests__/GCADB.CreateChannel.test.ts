@@ -1,5 +1,6 @@
 import {getConnection} from "../index"
 import env from "../env-vars.config"
+import { DiscordChannelType } from "../enums";
 
 test("Simple", async () => {
     try {
@@ -14,7 +15,9 @@ test("Simple", async () => {
         // TODO: Validate connection
 
         // Test createChannel
-        await db.createChannel("guildId", "channelid", "channelname", "channelType", true /* Triggerable */, undefined);
+        await db.createChannel("guildId", "channelid", "channelname", DiscordChannelType.CATEGORY, true /* Triggerable */, undefined);
+
+        await db.closeConnection();
 
     } catch (err) {
         console.log(err);

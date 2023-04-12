@@ -1,5 +1,6 @@
 import {getConnection, BaseDBError} from "../index"
 import env from "../env-vars.config"
+import { DiscordChannelType } from "../enums";
 
 test("Simple", async () => {
 
@@ -20,12 +21,13 @@ test("Simple", async () => {
            return; 
         }
 
-        let result = await db.createChannel("","","","",true, trans);
+        let result = await db.createChannel("","","",DiscordChannelType.CATEGORY,true, trans);
 
         if (result instanceof BaseDBError) {
             result.log();
             await trans.rollback();
             expect(true).toBeTruthy();
+            await db.closeConnection();
 
         } else {
             db.commitTransaction(trans);

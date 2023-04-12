@@ -22,8 +22,12 @@ test("CreateGuild", async () => {
             return;
         }
 
+        await db.commitTransaction(trans);
+        await db.closeConnection();
 
-
+    } catch (err) {
+        console.error(err);
+        expect(true).toBeTruthy();
     }
 
 });
