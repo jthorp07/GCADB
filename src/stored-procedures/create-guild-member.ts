@@ -1,6 +1,7 @@
-import { ConnectionPool, Transaction, Request } from "mssql";
+import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, DoesNotExistError, AlreadyExistsError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
+import { initReq } from ".";
 
 /**
  * Writes a Discord GuildMember's information on the GCA Database.
@@ -22,28 +23,18 @@ import BaseDBError from "../errors/base-db-error";
 async function createGuildMember(con: ConnectionPool, guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, trans?: Transaction) {
 
     // Validate
-    if (guildId.length > 21 || userId.length > 21) {
-        return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
-            ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
-            'CreateGuildMember');
-    }
+    if (guildId.length > 21 || userId.length > 21) return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
+                                                                ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
+                                                                'CreateGuildMember');
 
-    if (guildDisplayName.length > 32 || guildDisplayName.length < 3) {
-        return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
-            ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
-            'CreateGuildMember');
-    }
+    if (guildDisplayName.length > 32 || guildDisplayName.length < 3) return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
+                                                                                    ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
+                                                                                    'CreateGuildMember');
 
-    if (!con.connected) {
-        return new NotConnectedError("CreateGuildMember");
-    }
+    if (!con.connected) return new NotConnectedError("CreateGuildMember");
+    
 
-    let req: Request;
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    let req = initReq(con, trans);
 
     let result = await req.input('GuildId', guildId)
         .input('UserId', userId)
@@ -54,22 +45,20 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
         .execute('CreateGuildMember');
 
     let retVal = result.returnValue;
-    let retErr: BaseDBError | null;
-    retErr = null;
+
 
     switch (retVal) {
+        case 0: 
+            return;
         case 1:
-            retErr = new NullArgError(['GuildId', 'UserId', 'GuildDisplayName', 'IsOwner'], 'CreateGuildMember');
-            break;
+            return new NullArgError(['GuildId', 'UserId', 'GuildDisplayName', 'IsOwner'], 'CreateGuildMember') as BaseDBError;
         case 2:
-            retErr = new DoesNotExistError('CreateGuildMember');
-            break;
+            return new DoesNotExistError('CreateGuildMember') as BaseDBError;
         case 3:
-            retErr = new AlreadyExistsError('CreateGuildMember');
-            break;
+            return new AlreadyExistsError('CreateGuildMember') as BaseDBError;
     }
 
-    if (retErr) return retErr;
+    return new BaseDBError("An unknown error occurred", -99);
 
 }
 

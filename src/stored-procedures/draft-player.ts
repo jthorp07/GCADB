@@ -3,23 +3,14 @@ import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { QueueState, QueuePool } from "../enums";
 import { parseGetQueueRecordsets } from "./get-queue";
+import { initReq } from ".";
 
 async function draftPlayer(con: ConnectionPool, playerId: string, guildId: string, queueId: number, queueStatus: string, hostId: string, team: string, trans?: Transaction) {
 
-    if (!con.connected) {
-        return new NotConnectedError("DraftPlayer") as BaseDBError;
-    }
-
-    if (!playerId || !guildId || !queueId) {
-        return new NullArgError(["PlayerId", "GuildId", "QueueId"], "DraftPlayer") as BaseDBError;
-    }
-
-    let req: Request;
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    if (!con.connected) return new NotConnectedError("DraftPlayer") as BaseDBError;
+    if (!playerId || !guildId || !queueId) return new NullArgError(["PlayerId", "GuildId", "QueueId"], "DraftPlayer") as BaseDBError;
+    
+    let req = initReq(con, trans);
 
     let result = await req.input("PlayerId", playerId)
         .input("GuildId", guildId)

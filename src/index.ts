@@ -103,7 +103,7 @@ class GCADB {
   */
 
   /**
-   * Writes a newly created Discord channel to the GCA Database.
+   * Writes a Discord channel to the GCA Database.
    * Returns void on success; BaseDBError on failure
    * 
    * @param guildId The ID of the Discord server the request is coming from
@@ -118,8 +118,16 @@ class GCADB {
   };
 
 
-  public async createGuild(guildId: string, guildName: string, trans?: Transaction) {
-    return Procedures.createGuild(this.con, guildId, guildName, trans);
+  /**
+   * Writes a new guild to the GCA Database
+   * 
+   * @param guildId Discord ID of target guild
+   * @param guildName Name of target guild
+   * @param trans Database transaction to run this procedure against
+   * @returns BaseDBError upon failure, void upon success
+   */
+  public async createGuild(guildId: string, guildName: string, transaction?: Transaction) {
+    return Procedures.createGuild(this.con, guildId, guildName, transaction);
   }
 
   /**

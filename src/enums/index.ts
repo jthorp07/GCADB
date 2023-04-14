@@ -5,6 +5,7 @@ import { QueueState } from "./db-enum-queue-state";
 import { DiscordStaffRole } from "./db-enum-discord-staff-role";
 import { DiscordMemberRole } from "./db-enum-discord-member-role";
 import { DiscordChannelType } from "./db-enum-discord-channel-type";
+import { DiscordChannelName } from "./db-enum-discord-channel-name";
 
 export {
     ValorantRank,
@@ -13,7 +14,8 @@ export {
     QueueState,
     DiscordStaffRole,
     DiscordMemberRole,
-    DiscordChannelType
+    DiscordChannelType,
+    DiscordChannelName
 }
 
 export default {
@@ -23,5 +25,6 @@ export default {
     QueueState,
     DiscordStaffRole,
     DiscordMemberRole,
-    DiscordChannelType
+    DiscordChannelType,
+    DiscordChannelName
 }

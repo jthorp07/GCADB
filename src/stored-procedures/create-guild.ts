@@ -1,24 +1,23 @@
-import { ConnectionPool, Transaction, Request } from "mssql"
+import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
+import { initReq } from ".";
 
+/**
+ * Writes a new guild to the GCA Database
+ * 
+ * @param con ConnectionPool connected to the GCA Database
+ * @param guildId Discord ID of target guild
+ * @param guildName Name of target guild
+ * @param trans Database transaction to run this procedure against
+ * @returns BaseDBError upon failure, void upon success
+ */
 async function createGuild(con: ConnectionPool, guildId: string, guildName: string, trans?: Transaction) {
 
-    if (guildName.length > 32 || guildName.length < 3 || guildId.length > 21 || guildId.length < 17) {
-        throw new DataConstraintError(["GuildName", "GuildId"],["Must be greater than 2 and less than 33 characters in length", "Must be greater than 17 and less than 22 characters in length"],"CreateGuild");
-    }
-
-    if (!con.connected) {
-        throw new NotConnectedError("CreateGuild");
-    }
-
-    let req: Request;
-
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    if (guildName.length > 32 || guildName.length < 3 || guildId.length > 21 || guildId.length < 17) return new DataConstraintError(["GuildName", "GuildId"],["Must be greater than 2 and less than 33 characters in length", "Must be greater than 17 and less than 22 characters in length"],"CreateGuild");
+    if (!con.connected) return new NotConnectedError("CreateGuild");
+    
+    let req = initReq(con, trans);
 
     let result = await req.input("GuildId", guildId)
         .input("GuildId", guildId)
@@ -26,17 +25,18 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
         .execute("CreateGuild");
 
     let ret: number = result.returnValue;
-    let err: BaseDBError | null;
-    err = null;
+
 
     switch (ret) {
+        case 0:
+            return;
         case 1:
-            err = new NullArgError(["GuildId"], "CreateGuild");
+            return new NullArgError(["GuildId"], "CreateGuild") as BaseDBError;
         case 2:
-            err = new DoesNotExistError("CreateGuild");
+            return new DoesNotExistError("CreateGuild") as BaseDBError;
     }
 
-    if (err) return err;
+    return new BaseDBError("An unknown error occurred", -99);
 }
 
 export default createGuild;

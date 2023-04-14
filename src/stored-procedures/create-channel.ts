@@ -1,7 +1,8 @@
-import { ConnectionPool, Transaction, Request } from "mssql"
+import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError } from "../errors";
 import { DiscordChannelType } from "../enums";
 import BaseDBError from "../errors/base-db-error";
+import { initReq } from ".";
 
 /**
  * Writes a newly created Discord channel to the GCA Database
@@ -16,17 +17,9 @@ import BaseDBError from "../errors/base-db-error";
  */
 async function createChannel(con: ConnectionPool, guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable?: boolean, trans?: Transaction) {
 
-    if (!con.connected) {
-        throw new NotConnectedError("CreateChannel");
-    }
+    if (!con.connected) return new NotConnectedError("CreateChannel");
 
-    let req: Request;
-
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    let req = initReq(con, trans);
 
     let result = await req.input("GuildId", guildId)
         .input("ChannelId", channelId)

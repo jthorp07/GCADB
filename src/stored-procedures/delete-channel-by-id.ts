@@ -1,23 +1,16 @@
-import { ConnectionPool, Transaction, Request, Int } from "mssql"
+import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
+import { initReq } from ".";
 
 async function deleteChannelById(con: ConnectionPool, guildId: string, channelId: string, trans?: Transaction) {
 
-    if (!con.connected) {
-        return new NotConnectedError("DeleteChannelById") as BaseDBError;
-    }
+    if (!con.connected) return new NotConnectedError("DeleteChannelById") as BaseDBError;
+    if (guildId.length > 21 || guildId.length < 17) return new DataConstraintError(["GuildId", "ChannelId"],
+                                                                    ["Must be greater than 17 and less than 22 characters in length", "Must be greater than 17 and less than 22 characters in length"],
+                                                                    "DeleteChannelById") as BaseDBError;
 
-    if (guildId.length > 21 || guildId.length < 17) {
-        return new DataConstraintError(["GuildId", "ChannelId"],["Must be greater than 17 and less than 22 characters in length", "Must be greater than 17 and less than 22 characters in length"],"DeleteChannelById") as BaseDBError;
-    }
-
-    let req: Request;
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    let req = initReq(con, trans);
 
     let result = await req.input("GuildId", guildId)
         .input("ChannelId", channelId)

@@ -1,29 +1,15 @@
-// @QueueId INT,
-//     @NumCaptains INT OUTPUT,
-//     @PlayerCount INT OUTPUT,
-//     @QueueStatus NVARCHAR(100) OUTPUT,
-//     @HostId DiscordSnowflake OUTPUT
 import { ConnectionPool, Transaction, Request, NVarChar, VarChar, Int, IRecordSet } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { QueueState } from "../enums";
+import { initReq } from ".";
 
 async function getQueue(con: ConnectionPool, queueId: number, trans?: Transaction) {
 
-    if (!con.connected) {
-        return new NotConnectedError("GetQueue") as BaseDBError;
-    }
-
-    if (!queueId) {
-        return new NullArgError(["QueueId"], "GetQueue") as BaseDBError;
-    }
-
-    let req: Request;
-    if (trans) {
-        req = new Request(trans);
-    } else {
-        req = new Request(con);
-    }
+    if (!con.connected) return new NotConnectedError("GetQueue") as BaseDBError;
+    if (!queueId) return new NullArgError(["QueueId"], "GetQueue") as BaseDBError;
+    
+    let req = initReq(con, trans);
 
     let result = await req.input("QueueId", queueId)
         .output("NumCaptains", Int)
@@ -46,6 +32,7 @@ async function getQueue(con: ConnectionPool, queueId: number, trans?: Transactio
         case 2:
             return new DoesNotExistError("GetQueue") as BaseDBError;
     }
+    return new BaseDBError("An unknown error has occurred", -99);
 
 }
 
