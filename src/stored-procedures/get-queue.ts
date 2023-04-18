@@ -1,4 +1,4 @@
-import { ConnectionPool, Transaction, Request, NVarChar, VarChar, Int, IRecordSet } from "mssql"
+import { ConnectionPool, Transaction, NVarChar, VarChar, Int, IRecordSet } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { QueueState } from "../enums";

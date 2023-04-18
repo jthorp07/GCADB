@@ -23,3 +23,5 @@ async function getEnforceRankRoles(con: ConnectionPool, guildId: string, trans?:
     return new BaseDBError("An unknown error has occurred", -99);
 
 }
+
+export default getEnforceRankRoles;
