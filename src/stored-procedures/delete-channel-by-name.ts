@@ -1,24 +1,25 @@
-import { ConnectionPool, Transaction, Request } from "mssql"
+import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { DiscordChannelName } from "../enums";
 
-async function deleteChannelByName(con: ConnectionPool, guildId: string, channelId: string, trans?: Transaction) {
+async function deleteChannelByName(con: ConnectionPool, guildId: string, channelName: DiscordChannelName, trans?: Transaction) {
 
-    if (!con.connected) return new NotConnectedError("DeleteChannelById") as BaseDBError;
+    if (!con.connected) return new NotConnectedError("DeleteChannelByName") as BaseDBError;
     if (guildId.length > 21 || guildId.length < 17) 
-        return new DataConstraintError(["GuildId", "ChannelId"],["Must be greater than 17 and less than 22 characters in length", "Must be greater than 17 and less than 22 characters in length"],"DeleteChannelById") as BaseDBError;
+        return new DataConstraintError(["GuildId", "ChannelName"],["Must be greater than 17 and less than 22 characters in length", "Must be greater than 17 and less than 22 characters in length"],"DeleteChannelById") as BaseDBError;
     
 
     let req = initReq(con, trans);
 
     let result = await req.input("GuildId", guildId)
-        .input("ChannelName", channelId)
-        .execute("DeleteChannelById");
+        .input("ChannelName", channelName)
+        .execute("DeleteChannelByName");
 
     switch (result.returnValue) {
         case 0: return;
-        case 1: return new NullArgError(["GuildId", "ChannelId"], "DeleteChannelById") as BaseDBError;
+        case 1: return new NullArgError(["GuildId", "ChannelName"], "DeleteChannelByName") as BaseDBError;
     }
     return new BaseDBError("An unknown error occurred", -99);
 
