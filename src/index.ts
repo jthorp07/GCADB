@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures";
 import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
-import { DiscordChannelType } from "./enums";
+import { DiscordChannelName, DiscordChannelType } from "./enums";
 import env from "./env-vars.config";
 
 class GCADB {
@@ -151,13 +151,48 @@ class GCADB {
     return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction);
   }
 
-
   public async createQueue(guildId: string, hostId: string, queueType: string, queueId: number, transaction?: Transaction) {
     return Procedures.createQueue(this.con, guildId, hostId, queueType, queueId, transaction);
   }
 
   public async deleteChannelById(guildId: string, channelId: string, transaction?: Transaction) {
     return Procedures.deleteChannelById(this.con, guildId, channelId, transaction);
+  }
+
+  public async deleteChannelByName(guildId: string, channelName: DiscordChannelName, transaction?: Transaction) {
+    return Procedures.deleteChannelByName(this.con, guildId, channelName, transaction);
+  }
+
+  public async draftPlayer(playerId: string, guildId: string, queueId: number, transaction?: Transaction) {
+    return Procedures.draftPlayer(this.con, playerId, guildId, queueId, transaction)
+  }
+
+  public async endQueue(queueId: number, transaction?: Transaction) {
+    return Procedures.endQueue(this.con, queueId, transaction);
+  }
+
+  public async getChannel(guildId: string, channelName: DiscordChannelName, transaction?: Transaction) {
+    return Procedures.getChannel(this.con, guildId, channelName, transaction);
+  }
+
+  public async getEnforceRankRoles(guildId: string, transaction?: Transaction) {
+    return Procedures.getEnforceRankRoles(this.con, guildId, transaction);
+  }
+
+  public async getPrefs(userId: string, guildId: string, transaction?: Transaction) {
+    return Procedures.getPrefs(this.con, userId, guildId, transaction);
+  }
+
+  public async getProfile(userId: string, guildId: string, transaction?: Transaction) {
+    return Procedures.getProfile(this.con, userId, guildId, transaction);
+  }
+
+  public async getQueue(queueId: number, transaction?: Transaction) {
+    return Procedures.getQueue(this.con, queueId, transaction);
+  }
+
+  public async getRankRoles(guildId: string, transaction?: Transaction) {
+    return Procedures.getRankRoles(this.con, guildId, transaction)
   }
 
   /*

@@ -5,7 +5,7 @@ import { QueueState, QueuePool } from "../enums";
 import { parseGetQueueRecordsets } from "./get-queue";
 import { initReq } from ".";
 
-async function draftPlayer(con: ConnectionPool, playerId: string, guildId: string, queueId: number, queueStatus: string, hostId: string, team: string, trans?: Transaction) {
+async function draftPlayer(con: ConnectionPool, playerId: string, guildId: string, queueId: number, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("DraftPlayer") as BaseDBError;
     if (!playerId || !guildId || !queueId) return new NullArgError(["PlayerId", "GuildId", "QueueId"], "DraftPlayer") as BaseDBError;

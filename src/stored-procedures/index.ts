@@ -5,6 +5,7 @@ import createGuild from "./create-guild"
 import createGuildMember from "./create-guild-member"
 import createQueue from "./create-queue"
 import deleteChannelById from "./delete-channel-by-id"
+import deleteChannelByName from "./delete-channel-by-name"
 import draftPlayer from "./draft-player"
 import endQueue from "./end-queue"
 import getChannel from "./get-channel"
@@ -20,6 +21,7 @@ export default {
     createGuildMember,
     createQueue,
     deleteChannelById,
+    deleteChannelByName,
     draftPlayer,
     endQueue,
     getChannel,
