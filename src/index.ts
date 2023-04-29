@@ -145,7 +145,7 @@ class GCADB {
    * @param guildDisplayName Display name of target Discord user in target guild
    * @param valorantRankRoleName Likely to be deprecated
    * @param trans Database transaction to run this request against
-   * @returns 
+   * @returns Void if successful, BaseDBError if failed
    */
   public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, transaction?: Transaction) {
     return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction);
@@ -193,6 +193,38 @@ class GCADB {
 
   public async getRankRoles(guildId: string, transaction?: Transaction) {
     return Procedures.getRankRoles(this.con, guildId, transaction)
+  }
+
+  public async imManuallyStartingDraft(queueId: number, transaction?: Transaction) {
+    return Procedures.imManuallyStartingDraft(this.con, queueId, transaction);
+  }
+
+  public async imStartingDraft(queueId: number, transaction?: Transaction) {
+    return Procedures.imStartingDraft(this.con, queueId, transaction);
+  }
+
+  public async joinQueue(userId: string, guildId: string, queueId: number, transaction?: Transaction) {
+    return Procedures.joinQueue(this.con, userId, guildId, queueId, transaction);
+  }
+
+  public async leaveTenmans(queueId: number, guildId: string, transaction?: Transaction) {
+    return Procedures.leaveTenmans(this.con, queueId, guildId, transaction);
+  }
+
+  public async pickMap(queueId: number, transaction?: Transaction) {
+    return Procedures.pickMap(this.con, queueId, transaction);
+  }
+
+  public async pickSide(queueId: number, transaction?: Transaction) {
+    return Procedures.pickSide(this.con, queueId, transaction);
+  }
+
+  public async replaceCaptain(queueId: number, queuePool: number, transaction?: Transaction) {
+    return Procedures.replaceCaptain(this.con, queueId, queuePool, transaction)
+  }
+
+  public async setCanBeCaptain(userId: string, guildId: string, canBeCaptain: boolean, transaction?: Transaction) {
+    return Procedures.setCanBeCaptain(this.con, userId, guildId, canBeCaptain, transaction)
   }
 
   /*
