@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures";
 import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
-import { DiscordChannelName, DiscordChannelType } from "./enums";
+import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank } from "./enums";
 import env from "./env-vars.config";
 
 class GCADB {
@@ -227,6 +227,34 @@ class GCADB {
     return Procedures.setCanBeCaptain(this.con, userId, guildId, canBeCaptain, transaction)
   }
 
+  public async setCaptain(queueId: number, capOne: string, capTwo: string, guildId: string, transaction?: Transaction) {
+    return Procedures.setCaptain(this.con, queueId, capOne, capTwo, guildId, transaction)
+  }
+
+  public async setEnforceRankRoles(guildId: string, enforce: boolean, transaction?: Transaction) {
+    return Procedures.setEnforceRankRoles(this.con, guildId, enforce, transaction);
+  }
+
+  public async setRole(guildId: string, roleId: string, roleName: ValorantRank | DiscordMemberRole | DiscordStaffRole, orderBy: number, roleIcon: string, roleEmote: string, transaction?: Transaction) {
+    return Procedures.setRole(this.con, guildId, roleId, roleName, orderBy, roleIcon, roleEmote, transaction);
+  }
+
+  public async setValName(valName: string, userId: string, guildId: string, transaction?: Transaction) {
+    return Procedures.setValName(this.con, valName, userId, guildId, transaction);
+  }
+
+  public async setValorantRank(guildId: string, userId: string, rank: ValorantRank, transaction?: Transaction) {
+    return Procedures.setValorantRank(this.con, guildId, userId, rank, transaction);
+  }
+
+  public async updateDiscordProfile(guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank, hasRank: boolean, transaction: Transaction) {
+    return Procedures.updateDiscordProfile(this.con, guildId, userId, username, isOwner, guildDisplayName, currentRank, hasRank, transaction);
+  }
+
+  public async updateValorantProfile(guildId: string, userId: string, valorantDisplayName: string, transaction?: Transaction) {
+    return Procedures.updateValorantProfile(this.con, guildId, userId, valorantDisplayName, transaction);
+  }
+
   /*
     =======================================================================================================
     Non-Stored Procedure Calls
@@ -249,5 +277,5 @@ class GCADB {
 
 }
 
-export { BaseDBError, env }
+export { BaseDBError, env, DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank }
 export const getConnection = GCADB.GetConnection;

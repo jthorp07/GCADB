@@ -22,6 +22,13 @@ import pickMap from "./pick-map";
 import pickSide from "./pick-side";
 import replaceCaptain from "./replace-captain";
 import setCanBeCaptain from "./set-can-be-captain";
+import setCaptain from "./set-captains";
+import setEnforceRankRoles from "./set-enforce-rankroles";
+import setRole from "./set-role";
+import setValName from "./set-val-name";
+import setValorantRank from "./set-valorant-rank";
+import updateDiscordProfile from "./update-discord-profile";
+import updateValorantProfile from "./update-valorant-profile";
 
 export default {
     createChannel,
@@ -45,7 +52,14 @@ export default {
     pickMap,
     pickSide,
     replaceCaptain,
-    setCanBeCaptain
+    setCanBeCaptain,
+    setCaptain,
+    setEnforceRankRoles,
+    setRole,
+    setValName,
+    setValorantRank,
+    updateDiscordProfile,
+    updateValorantProfile
 };
 
 export function initReq(con: ConnectionPool, trans?: Transaction) {
