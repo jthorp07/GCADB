@@ -5,12 +5,12 @@ import { BaseDBError } from "./errors/base-db-error";
 import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank } from "./enums";
 import env from "./env-vars.config";
 
-class GCADB {
+export class GCADB {
 
   con: ConnectionPool;
   reconnecting: boolean;
 
-  constructor(conPool: ConnectionPool) {
+  private constructor(conPool: ConnectionPool) {
     this.con = conPool;
   }
 
