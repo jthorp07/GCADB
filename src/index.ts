@@ -7,7 +7,8 @@ import env from "./env-vars.config";
 
 class GCADB {
 
-  con: ConnectionPool
+  con: ConnectionPool;
+  reconnecting: boolean;
 
   constructor(conPool: ConnectionPool) {
     this.con = conPool;
