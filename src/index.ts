@@ -4,13 +4,15 @@ import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
 import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank } from "./enums";
 import env from "./env-vars.config";
+import { EventEmitter } from "events"
 
-export class GCADB {
+export class GCADB extends EventEmitter {
 
   con: ConnectionPool;
   reconnecting: boolean;
 
   private constructor(conPool: ConnectionPool) {
+    super();
     this.con = conPool;
   }
 
@@ -43,6 +45,12 @@ export class GCADB {
     try {
       let initCon = new ConnectionPool(sql);
       let db = new GCADB(await initCon.connect());
+      db.addListener("reconnect", async () => {
+        let newCon = new ConnectionPool(sql);
+        await newCon.connect();
+        db.con = newCon;
+        db.reconnecting = false;
+      });
       return db;
     } catch (err) {
       return null;
@@ -84,9 +92,13 @@ export class GCADB {
    * 
    * @param transaction 
    */
-  public async commitTransaction(transaction: Transaction,) {
+  public async commitTransaction(transaction: Transaction) {
 
-    transaction.commit()
+    try {
+      transaction.commit();
+    } catch (err) {
+      return new BaseDBError("The transaction failed to commit", -50);
+    }
 
   }
 
@@ -112,10 +124,26 @@ export class GCADB {
    * @param channelName The name of the created Discord channel
    * @param channelType The type of the created Discord channel
    * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
-   * @param trans A Transaction on the GCA Database, if this request should be part of one
+   * @param transaction A Transaction on the GCA Database, if this request should be part of one
    */
-  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {
-    return Procedures.createChannel(this.con, guildId, channelId, channelName, channelType, triggerable, transaction);
+  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {    
+
+    let attempt = 0;
+    while (this.reconnecting && attempt <= 10) {
+      await waitOneSecond();
+      attempt++;
+    }
+
+    try {
+      return Procedures.createChannel(this.con, guildId, channelId, channelName, channelType, triggerable, transaction);
+    } catch (err) {
+      if ((err.code == 'ETIMEOUT' || err.code == 'EREQUEST') && !this.reconnecting) {
+        this.reconnecting = true;
+        this.emit("reconnect");
+        return new BaseDBError("Database connection failed or exceeded maximum attempts", -100);
+      }
+    }
+ 
   };
 
 
@@ -276,6 +304,14 @@ export class GCADB {
     return NonProcedures.deleteGuild(this.con, guildId, trans);
   }
 
+}
+
+async function waitOneSecond() {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(undefined);
+    }, 1000);
+  })
 }
 
 export { BaseDBError, env, DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank }
