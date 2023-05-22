@@ -34,12 +34,12 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
     err = null;
     switch (ret) {
         case 1:
-            err = new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
+            return new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
         case 2:
-            err = new DoesNotExistError("CreateChannel");
+            return new DoesNotExistError("CreateChannel");
     }
 
-    if (err) return err;
+    return new BaseDBError("An unknown error occurred", -99);
 }
 
 export default createChannel;

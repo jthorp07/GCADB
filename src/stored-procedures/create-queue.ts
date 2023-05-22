@@ -13,7 +13,7 @@ import { initReq } from ".";
  * @param trans 
  * @returns 
  */
-async function createQueue(con: ConnectionPool, guildId: string, hostId: string, queueType: string, queueId: number, trans?: Transaction) {
+async function createQueue(con: ConnectionPool, guildId: string, hostId: string, queueType: string, trans?: Transaction) {
 
     // Validate
     if (!con.connected) return new NotConnectedError("CreateQueue") as BaseDBError;

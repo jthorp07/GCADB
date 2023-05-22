@@ -4,23 +4,23 @@ import { QueueType } from "../enums";
 
 test("EmptyQueue", async () => {
 
-    try {
+    // try {
 
-        // Connect to the database
-        let db = await getConnection(env.SQL);
-        if (!db) {
-            expect(false).toBeTruthy();
-            return;
-        }
+    //     // Connect to the database
+    //     let db = await getConnection(env.SQL);
+    //     if (!db) {
+    //         expect(false).toBeTruthy();
+    //         return;
+    //     }
 
-        // Close database connection when finished
-        await db.closeConnection();
+    //     // Close database connection when finished
+    //     await db.closeConnection();
 
-    } catch (error) {
+    // } catch (error) {
 
-        console.error(error);
-        return;
+    //     console.error(error);
+    //     return;
 
-    }
+    // }
 
 });

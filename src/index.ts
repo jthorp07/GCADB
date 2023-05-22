@@ -109,6 +109,26 @@ export class GCADB extends EventEmitter {
     await this.con.close();
   }
 
+  private async callProcedure(proc: (...args: any[]) => Promise<any>, args: any[]) {
+
+    let attempt = 0;
+    while (this.reconnecting && attempt <= 10) {
+      await waitOneSecond();
+      attempt++;
+    }
+
+    try {
+      return proc.apply(this, args);
+    } catch (err) {
+      if ((err.code == 'ETIMEOUT' || err.code == 'EREQUEST') && !this.reconnecting) {
+        this.reconnecting = true;
+        this.emit("reconnect");
+        return new BaseDBError("Database connection failed or exceeded maximum attempts", -100);
+      }
+    }
+
+  }
+
   /*
     =======================================================================================================
     Stored Procedure Calls
@@ -128,22 +148,7 @@ export class GCADB extends EventEmitter {
    */
   public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {    
 
-    let attempt = 0;
-    while (this.reconnecting && attempt <= 10) {
-      await waitOneSecond();
-      attempt++;
-    }
-
-    try {
-      return Procedures.createChannel(this.con, guildId, channelId, channelName, channelType, triggerable, transaction);
-    } catch (err) {
-      if ((err.code == 'ETIMEOUT' || err.code == 'EREQUEST') && !this.reconnecting) {
-        this.reconnecting = true;
-        this.emit("reconnect");
-        return new BaseDBError("Database connection failed or exceeded maximum attempts", -100);
-      }
-    }
- 
+    return this.callProcedure(Procedures.createChannel, [this.con, guildId, channelId, channelName, channelType, triggerable, transaction]) as Promise<BaseDBError>;
   };
 
 
@@ -152,11 +157,11 @@ export class GCADB extends EventEmitter {
    * 
    * @param guildId Discord ID of target guild
    * @param guildName Name of target guild
-   * @param trans Database transaction to run this procedure against
+   * @param transaction Database transaction to run this procedure against
    * @returns BaseDBError upon failure, void upon success
    */
   public async createGuild(guildId: string, guildName: string, transaction?: Transaction) {
-    return Procedures.createGuild(this.con, guildId, guildName, transaction);
+    return this.callProcedure(Procedures.createGuild, [this.con, guildId, guildName, transaction]) as Promise<BaseDBError>;
   }
 
   /**
@@ -177,11 +182,11 @@ export class GCADB extends EventEmitter {
    * @returns Void if successful, BaseDBError if failed
    */
   public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, transaction?: Transaction) {
-    return Procedures.createGuildMember(this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction);
+    return this.callProcedure(Procedures.createGuildMember, [this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction]) as Promise<BaseDBError>;
   }
 
-  public async createQueue(guildId: string, hostId: string, queueType: string, queueId: number, transaction?: Transaction) {
-    return Procedures.createQueue(this.con, guildId, hostId, queueType, queueId, transaction);
+  public async createQueue(guildId: string, hostId: string, queueType: string, transaction?: Transaction) {
+    return this.callProcedure(Procedures.createQueue, [this.con, guildId, hostId, queueType, transaction]) as Promise<number | BaseDBError>
   }
 
   public async deleteChannelById(guildId: string, channelId: string, transaction?: Transaction) {

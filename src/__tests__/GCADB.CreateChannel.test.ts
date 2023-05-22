@@ -15,7 +15,8 @@ test("Simple", async () => {
         // TODO: Validate connection
 
         // Test createChannel
-        await db.createChannel("guildId", "channelid", "channelname", DiscordChannelType.CATEGORY, true /* Triggerable */, undefined);
+        let result = await db.createChannel("guildId", "channelid", "channelname", DiscordChannelType.CATEGORY, true /* Triggerable */, undefined);
+        if (result) result.log();
 
         await db.closeConnection();
 
