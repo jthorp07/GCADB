@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction, Int } from "mssql"
 import { NullArgError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { QueueType } from "../enums";
 
 /**
  * 
@@ -13,7 +14,7 @@ import { initReq } from ".";
  * @param trans 
  * @returns 
  */
-async function createQueue(con: ConnectionPool, guildId: string, hostId: string, queueType: string, trans?: Transaction) {
+async function createQueue(con: ConnectionPool, guildId: string, hostId: string, queueType: QueueType, trans?: Transaction) {
 
     // Validate
     if (!con.connected) return new NotConnectedError("CreateQueue") as BaseDBError;

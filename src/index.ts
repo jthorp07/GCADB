@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures";
 import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
-import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, ValorantRank } from "./enums";
+import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, QueueType, ValorantRank } from "./enums";
 import env from "./env-vars.config";
 import { EventEmitter } from "events"
 
@@ -185,7 +185,7 @@ export class GCADB extends EventEmitter {
     return this.callProcedure(Procedures.createGuildMember, [this.con, guildId, userId, isOwner, username, guildDisplayName, valorantRankRoleName, transaction]) as Promise<BaseDBError>;
   }
 
-  public async createQueue(guildId: string, hostId: string, queueType: string, transaction?: Transaction) {
+  public async createQueue(guildId: string, hostId: string, queueType: QueueType, transaction?: Transaction) {
     return this.callProcedure(Procedures.createQueue, [this.con, guildId, hostId, queueType, transaction]) as Promise<number | BaseDBError>
   }
 
