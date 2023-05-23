@@ -2,3 +2,4 @@ node_modules
 /lib
 .env
 testapp.js
+/src/__tests__/_test_data_
