@@ -1,5 +1,5 @@
 import { ConnectionPool, Transaction } from "mssql"
-import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
+import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError, AlreadyExistsError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
 
@@ -33,6 +33,8 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
             return new NullArgError(["GuildId"], "CreateGuild") as BaseDBError;
         case 2:
             return new DoesNotExistError("CreateGuild") as BaseDBError;
+        case 3:
+            return new AlreadyExistsError("CreateGuild");
     }
 
     return new BaseDBError("An unknown error occurred", -99);

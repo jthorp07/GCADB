@@ -28,9 +28,6 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
                                                                 ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
                                                                 'CreateGuildMember');
 
-    if (guildDisplayName.length > 32 || guildDisplayName.length < 3) return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
-                                                                                    ['Must be between 17 and 21 characters', 'Must be between 17 and 21 characters', 'Must be between 3 and 32 characters'],
-                                                                                    'CreateGuildMember');
 
     if (!con.connected) return new NotConnectedError("CreateGuildMember");
     
