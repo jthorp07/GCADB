@@ -3,3 +3,4 @@ node_modules
 .env
 testapp.js
 /src/__tests__/_test_data_
+tsconfig.json
