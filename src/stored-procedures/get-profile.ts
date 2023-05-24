@@ -42,3 +42,14 @@ function parseGetProfileRecords(recordset: IRecordSet<any>) {
 }
 
 export default getProfile;
+export type GetProfileRecords = {
+    isPremium: boolean,
+    isOwner: boolean,
+    discordUsername: string,
+    discordGuildName: string,
+    discordDisplayName: string,
+    valorantDisplayName: string,
+    valorantRoleName: string,
+    hasValorantRank: boolean,
+    canBeCaptain: boolean
+}

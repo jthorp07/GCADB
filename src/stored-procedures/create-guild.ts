@@ -20,7 +20,6 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
     let req = initReq(con, trans);
 
     let result = await req.input("GuildId", guildId)
-        .input("GuildId", guildId)
         .input("GuildName", guildName)
         .execute("CreateGuild");
 

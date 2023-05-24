@@ -1,4 +1,4 @@
-import { ConnectionPool, Transaction, Bit, Int, NVarChar, IRecordSet } from "mssql"
+import { ConnectionPool, Transaction, Bit, Int, NVarChar, IRecordSet, VarChar } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
@@ -17,6 +17,7 @@ async function joinQueue(con: ConnectionPool, userId: string, guildId: string, q
         .output("NumPlayers", Int)
         .output("NumCaptains", Int)
         .output("QueueStatus", NVarChar(100))
+        .output("HostId", VarChar(22))
         .execute("JoinQueue");
 
     switch (result.returnValue) {
@@ -25,6 +26,7 @@ async function joinQueue(con: ConnectionPool, userId: string, guildId: string, q
                 numPlayers: result.output.NumPlayers as number,
                 numCaptains: result.output.NumCaptains as number,
                 queueStatus: result.output.QueueStatus as QueueState,
+                hostId: result.output.HostId as string,
                 records: parseGetQueueRecordsets(result.recordsets as IRecordSet<any>)
             };
         case 1:

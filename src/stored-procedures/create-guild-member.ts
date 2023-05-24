@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, DoesNotExistError, AlreadyExistsError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { ValorantRank } from "../enums";
 
 /**
  * Writes a Discord GuildMember's information on the GCA Database.
@@ -20,7 +21,7 @@ import { initReq } from ".";
  * @param trans Database transaction to run this request against
  * @returns 
  */
-async function createGuildMember(con: ConnectionPool, guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: string, trans?: Transaction) {
+async function createGuildMember(con: ConnectionPool, guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: ValorantRank | null, trans?: Transaction) {
 
     // Validate
     if (guildId.length > 21 || userId.length > 21) return new DataConstraintError(['GuildId', 'UserId', 'GuildDisplayName'],
