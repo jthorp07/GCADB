@@ -16,7 +16,7 @@ async function setCaptain(con: ConnectionPool, queueId: number, capOne: string, 
         .input("CapTwo", capTwo)
         .input("GuildId", guildId)
         .output("QueueStatus", NVarChar(100))
-        .execute("SetCaptain");
+        .execute("SetCaptains");
 
     switch (result.returnValue) {
         case 0:

@@ -112,25 +112,44 @@ export class GCADB extends EventEmitter {
     await this.con.close();
   }
 
+  /**
+   * Wraps a stored procedure call 
+   * 
+   * @param proc Procedure to be called
+   * @param args Arguments to give the procedure
+   * @returns The result of the procedure
+   */
   private async callProcedure(proc: (...args: any[]) => Promise<any>, args: any[]) {
 
     let attempt = 0;
     while (this.reconnecting && attempt <= 10) {
+      if (attempt > 0) console.log("retrying...");
       await waitOneSecond();
       attempt++;
     }
 
-    try {
-      return await proc.apply(this, args);
-    } catch (err) {
-      if (!this.reconnecting) {
-        console.log("Reconnect triggered");
-        this.reconnecting = true;
-        this.emit("reconnect");
-        return new BaseDBError("Database connection failed or exceeded maximum attempts", -100);
+    while (attempt <= 10) {
+
+      if (attempt > 0) console.log("retrying...");
+
+      try {
+        return await proc.apply(this, args);
+      } catch (err) {
+        console.log(err);
+
+        if (!this.reconnecting) {
+          console.log("Reconnect triggered");
+          this.reconnecting = true;
+          this.emit("reconnect");
+          await waitOneSecond();
+          attempt++;
+        } else {
+          await waitOneSecond();
+          attempt++;
+        }
       }
     }
-
+    return new BaseDBError("Database connection failed or exceeded maximum attempts", -100);
   }
 
   /*
@@ -150,7 +169,7 @@ export class GCADB extends EventEmitter {
    * @param triggerable Whether or not VoiceState changes on the channel should be reacted to
    * @param transaction A Transaction on the GCA Database, if this request should be part of one
    */
-  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {    
+  public async createChannel(guildId: string, channelId: string, channelName: string, channelType: DiscordChannelType, triggerable: boolean, transaction?: Transaction) {
     return this.callProcedure(Procedures.createChannel, [this.con, guildId, channelId, channelName, channelType, triggerable, transaction]) as Promise<BaseDBError>;
   };
 
@@ -201,7 +220,7 @@ export class GCADB extends EventEmitter {
   }
 
   public async draftPlayer(playerId: string, guildId: string, queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.draftPlayer, [this.con, playerId, guildId, queueId, transaction]) as Promise<BaseDBError | {queueStatus: QueueState, hostId: string, team: QueuePool, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.draftPlayer, [this.con, playerId, guildId, queueId, transaction]) as Promise<BaseDBError | { queueStatus: QueueState, hostId: string, team: QueuePool, records: GetQueueRecords }>;
   }
 
   public async endQueue(queueId: number, transaction?: Transaction) {
@@ -209,7 +228,7 @@ export class GCADB extends EventEmitter {
   }
 
   public async getChannel(guildId: string, channelName: DiscordChannelName, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getChannel, [this.con, guildId, channelName, transaction]) as Promise<BaseDBError | {channelId: string, triggerable: boolean, channelType: DiscordChannelType}>;
+    return this.callProcedure(Procedures.getChannel, [this.con, guildId, channelName, transaction]) as Promise<BaseDBError | { channelId: string, triggerable: boolean, channelType: DiscordChannelType }>;
   }
 
   public async getEnforceRankRoles(guildId: string, transaction?: Transaction) {
@@ -217,43 +236,43 @@ export class GCADB extends EventEmitter {
   }
 
   public async getPrefs(userId: string, guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getPrefs, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | {canBeCaptain: boolean}>;
+    return this.callProcedure(Procedures.getPrefs, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | { canBeCaptain: boolean }>;
   }
 
   public async getProfile(userId: string, guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getProfile, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | {currentRank: ValorantRank, records: GetProfileRecords }>;
+    return this.callProcedure(Procedures.getProfile, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | { currentRank: ValorantRank, records: GetProfileRecords }>;
   }
 
   public async getQueue(queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getQueue, [this.con, queueId, transaction]) as Promise<BaseDBError | {captainCount: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.getQueue, [this.con, queueId, transaction]) as Promise<BaseDBError | { captainCount: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords }>;
   }
 
   public async getRankRoles(guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getRankRoles, [this.con, guildId, transaction]) as Promise<BaseDBError | {roleId: string, roleName: ValorantRank, orderBy: number, roleIcon: string, roleEmote: string}[]>
+    return this.callProcedure(Procedures.getRankRoles, [this.con, guildId, transaction]) as Promise<BaseDBError | { roleId: string, roleName: ValorantRank, orderBy: number, roleIcon: string, roleEmote: string }[]>
   }
 
   public async imManuallyStartingDraft(queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.imManuallyStartingDraft, [this.con, queueId, transaction]) as Promise<BaseDBError | {success: boolean, enforce: boolean}>;
+    return this.callProcedure(Procedures.imManuallyStartingDraft, [this.con, queueId, transaction]) as Promise<BaseDBError | { success: boolean, enforce: boolean }>;
   }
 
   public async imStartingDraft(queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.imStartingDraft, [this.con, queueId, transaction]) as Promise<BaseDBError | {success: boolean, enforce: boolean}>;
+    return this.callProcedure(Procedures.imStartingDraft, [this.con, queueId, transaction]) as Promise<BaseDBError | { success: boolean, enforce: boolean }>;
   }
 
   public async joinQueue(userId: string, guildId: string, queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.joinQueue, [this.con, userId, guildId, queueId, transaction]) as Promise<BaseDBError | {numPlayers: number, numCaptains: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.joinQueue, [this.con, userId, guildId, queueId, transaction]) as Promise<BaseDBError | { numPlayers: number, numCaptains: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords }>;
   }
 
   public async leaveTenmans(queueId: number, guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.leaveTenmans, [this.con, queueId, guildId, transaction]) as Promise<BaseDBError | {wasCaptain: boolean, queuePool: QueuePool}>;
+    return this.callProcedure(Procedures.leaveTenmans, [this.con, queueId, guildId, transaction]) as Promise<BaseDBError | { wasCaptain: boolean, queuePool: QueuePool }>;
   }
 
   public async pickMap(queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.pickMap, [this.con, queueId, transaction]) as Promise<BaseDBError | {numCaptains: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.pickMap, [this.con, queueId, transaction]) as Promise<BaseDBError | { numCaptains: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords }>;
   }
 
   public async pickSide(queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.pickSide, [this.con, queueId, transaction]) as Promise<BaseDBError | {numCaptains: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.pickSide, [this.con, queueId, transaction]) as Promise<BaseDBError | { numCaptains: number, playerCount: number, queueStatus: QueueState, hostId: string, records: GetQueueRecords }>;
   }
 
   public async replaceCaptain(queueId: number, queuePool: number, transaction?: Transaction) {
@@ -265,7 +284,7 @@ export class GCADB extends EventEmitter {
   }
 
   public async setCaptain(queueId: number, capOne: string, capTwo: string, guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.setCaptain, [this.con, queueId, capOne, capTwo, guildId, transaction]) as Promise<BaseDBError | {queueStatus: QueueState, records: GetQueueRecords}>;
+    return this.callProcedure(Procedures.setCaptain, [this.con, queueId, capOne, capTwo, guildId, transaction]) as Promise<BaseDBError | { queueStatus: QueueState, records: GetQueueRecords }>;
   }
 
   public async setEnforceRankRoles(guildId: string, enforce: boolean, transaction?: Transaction) {
