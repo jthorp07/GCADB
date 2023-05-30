@@ -17,6 +17,7 @@ export class GCADB extends EventEmitter {
 
   private constructor(conPool: ConnectionPool) {
     super();
+    this.reconnecting = false;
     this.con = conPool;
   }
 
