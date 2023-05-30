@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function updateValorantProfile(con: ConnectionPool, guildId: string, userId: string, valorantDisplayName: string, trans?: Transaction) {
 
@@ -9,6 +10,11 @@ async function updateValorantProfile(con: ConnectionPool, guildId: string, userI
     if (!guildId || !userId || !valorantDisplayName) return new NullArgError(["GuildId", "UserId", "ValorantDisplayName"], "UpdateValorantProfile");
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("UserId", userId)
         .input("ValorantDisplayName", valorantDisplayName)
@@ -22,7 +28,7 @@ async function updateValorantProfile(con: ConnectionPool, guildId: string, userI
         case 2:
             return new DoesNotExistError("UpdateValorantProfile");
     }
-    return new BaseDBError("An unknown error has occurred", -99);
+    return new BaseDBError("An unknown error has occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default updateValorantProfile

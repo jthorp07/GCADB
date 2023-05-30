@@ -1,7 +1,7 @@
 import { ConnectionPool, Transaction, Request, VarChar, Bit } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
-import { DiscordChannelName, DiscordChannelType } from "../enums";
+import { DiscordChannelName, DiscordChannelType, GCADBErrorCode } from "../enums";
 import { initReq } from ".";
 
 async function getChannel(con: ConnectionPool, guildId: string, channelName: DiscordChannelName, trans?: Transaction) {
@@ -10,6 +10,10 @@ async function getChannel(con: ConnectionPool, guildId: string, channelName: Dis
     if (!channelName || !guildId) return new NullArgError(["GuildId", "ChannelName"], "GetChannel") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
 
     let result = await req.input("GuildId", guildId)
         .input("ChannelName", channelName)
@@ -31,7 +35,7 @@ async function getChannel(con: ConnectionPool, guildId: string, channelName: Dis
             return new DoesNotExistError("GetChannel") as BaseDBError;
     }
 
-    return new BaseDBError("An unknown error has occurred", -99);
+    return new BaseDBError("An unknown error has occurred", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

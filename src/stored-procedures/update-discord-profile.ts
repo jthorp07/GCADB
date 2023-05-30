@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError, DoesNotExistError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { ValorantRank } from "../enums";
+import { GCADBErrorCode, ValorantRank } from "../enums";
 
 async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank, hasRank: boolean, trans?: Transaction) {
 
@@ -10,6 +10,11 @@ async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId
     if (!guildId || !userId || !username || !isOwner || !guildDisplayName) return new NullArgError(["GuildId", "UserId", "Username", "IsOwner", "GuildDisplayName"], "UpdateDiscordProfile");
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("UserId", userId)
         .input("Username", username)
@@ -31,7 +36,7 @@ async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId
                 ["Must be a string between 3 and 32 characters", "Must be a string between 3 and 32 characters", "Must be of type 'ValorantRank' (see import ValorantRank)"], 
                 "UpdateDiscordProfile");
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default updateDiscordProfile;

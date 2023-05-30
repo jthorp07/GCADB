@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction, Bit, Int, NVarChar, IRecordSet, VarChar } 
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function replaceCaptain(con: ConnectionPool, queueId: number, queuePool: number, trans?: Transaction) {
 
@@ -9,6 +10,11 @@ async function replaceCaptain(con: ConnectionPool, queueId: number, queuePool: n
     if (!queueId || !queuePool) return new NullArgError(["QueueId", "QueuePool"], "ReplaceCaptain") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("QueueId", queueId)
         .input("QueuePool", queuePool)
         .execute("ReplaceCaptain");
@@ -19,7 +25,7 @@ async function replaceCaptain(con: ConnectionPool, queueId: number, queuePool: n
         case 1:
             return new NullArgError(["QueueId", "QueuePool"], "ReplaceCaptain") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default replaceCaptain;

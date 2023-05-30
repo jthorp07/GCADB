@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction, Int } from "mssql"
 import { NullArgError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { QueueType } from "../enums";
+import { GCADBErrorCode, QueueType } from "../enums";
 
 /**
  * 
@@ -23,6 +23,10 @@ async function createQueue(con: ConnectionPool, guildId: string, hostId: string,
     
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("HostId", hostId)
         .input("QueueType", queueType)
@@ -35,9 +39,9 @@ async function createQueue(con: ConnectionPool, guildId: string, hostId: string,
         case 1:
             return new NullArgError(["HostId", "QueueId"], "CreateQueue");
         case 5: 
-            return new BaseDBError("For the type of queue provided, procedure argument HostId cannot be null", 5);
+            return new BaseDBError("For the type of queue provided, procedure argument HostId cannot be null", GCADBErrorCode.NULL_ARG_CONDITIONAL_ERROR);
     }
-    return new BaseDBError("An unknown error occured", -99);
+    return new BaseDBError("An unknown error occured", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

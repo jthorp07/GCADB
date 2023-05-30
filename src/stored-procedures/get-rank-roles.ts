@@ -10,21 +10,37 @@ async function getRankRoles(con: ConnectionPool, guildId: string, trans?: Transa
     if (!guildId) return new NullArgError(["GuildId"], "GetRankRoles") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .execute("GetRankRoles");
 
-    return parseRankRoles(result.recordset);
+    switch (result.returnValue) {
+        case 0:
+            return parseRankRoles(result.recordset);
+    }
+
+}
+
+/**
+ * Type returned by parseRankRoles:
+ * A set of records that represent the VALORANT Ranked
+ * Roles set in a Discord server
+ */
+export type ValorantRankedRolesRecord = {
+    roleId: string,
+    roleName: ValorantRank,
+    orderBy: number,
+    roleIcon: string,
+    roleEmote: string
 }
 
 function parseRankRoles(datum: IRecordSet<any>) {
 
-    let parsedRoles: {
-        roleId: string,
-        roleName: ValorantRank,
-        orderBy: number,
-        roleIcon: string,
-        roleEmote: string
-    }[] = [];
+    let parsedRoles: ValorantRankedRolesRecord[] = [];
 
     for (let row of datum) {
         parsedRoles.push({

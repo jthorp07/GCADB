@@ -1,4 +1,5 @@
 import { Transaction, ConnectionPool, Request } from "mssql";
+import BaseDBError from "../errors/base-db-error";
 
 import createChannel from "./create-channel";
 import createGuild from "./create-guild";
@@ -63,5 +64,13 @@ export default {
 };
 
 export function initReq(con: ConnectionPool, trans?: Transaction) {
-    return trans ? new Request(trans) : new Request(con);
+
+    try {
+        let req = trans ? new Request(trans) : new Request(con);
+        if (!req) return new BaseDBError("Failed to create request", -97);
+        return req;
+    } catch (err) {
+        return new BaseDBError("Error creating request", -97);
+    }
+
 };

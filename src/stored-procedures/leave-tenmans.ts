@@ -4,14 +4,20 @@ import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
 import { QueuePool } from "../enums";
 
-async function leaveTenmans(con: ConnectionPool, queueId: number, guildId: string, trans?: Transaction) {
+async function leaveTenmans(con: ConnectionPool, queueId: number, guildId: string, userId: string, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("LeaveTenmans") as BaseDBError;
     if (!queueId || !guildId) return new NullArgError(["QueueId", "GuildId"], "LeaveTenmans") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("QueueId", queueId)
         .input("GuildId", guildId)
+        .input("UserId", userId)
         .output("WasCaptain", Bit)
         .output("QueuePool", NVarChar(100))
         .execute("LeaveTenmans");

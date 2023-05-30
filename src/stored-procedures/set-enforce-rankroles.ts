@@ -2,6 +2,7 @@ import { ConnectionPool, IRecordSet, NVarChar, Transaction } from "mssql";
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function setEnforceRankRoles(con: ConnectionPool, guildId: string, enforce: boolean, trans?: Transaction) {
 
@@ -9,6 +10,11 @@ async function setEnforceRankRoles(con: ConnectionPool, guildId: string, enforce
     if (!guildId || !enforce) return new NullArgError(["GuildId", "Enforce"], "SetEnforceRankRoles") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("Enforce", enforce)
         .execute("SetEnforceRankRoles");
@@ -19,7 +25,7 @@ async function setEnforceRankRoles(con: ConnectionPool, guildId: string, enforce
         case 1:
             return new NullArgError(["GuildId", "Enforce"], "SetEnforceRankRoles") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default setEnforceRankRoles;

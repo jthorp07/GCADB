@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { DiscordMemberRole, DiscordStaffRole, ValorantRank } from "../enums";
+import { DiscordMemberRole, DiscordStaffRole, GCADBErrorCode, ValorantRank } from "../enums";
 
 async function setRole(con: ConnectionPool, guildId: string, roleId: string, roleName: DiscordMemberRole | DiscordStaffRole | ValorantRank, orderBy: number, roleIcon: string, roleEmote: string, trans?: Transaction) {
 
@@ -10,6 +10,11 @@ async function setRole(con: ConnectionPool, guildId: string, roleId: string, rol
     if (!guildId || !roleId || !roleName) return new NullArgError(["GuildId", "RoleId", "RoleName"], "SetRole") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("RoleId", roleId)
         .input("RoleName", roleName)
@@ -24,7 +29,7 @@ async function setRole(con: ConnectionPool, guildId: string, roleId: string, rol
         case 1:
             return new NullArgError(["GuildId", "RoleId", "RoleName"], "SetRole") as BaseDBError;
     }
-    return new BaseDBError("An unknown error has occurred", -99);
+    return new BaseDBError("An unknown error has occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default setRole;

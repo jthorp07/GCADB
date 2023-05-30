@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction, Request } from "mssql"
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function endQueue(con: ConnectionPool, queueId: number, trans?: Transaction) {
 
@@ -10,10 +11,14 @@ async function endQueue(con: ConnectionPool, queueId: number, trans?: Transactio
 
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("QueueId", queueId)
         .execute("EndQueue");
 
-    if (result.returnValue != 0) return new BaseDBError("An unknown error has occured", -99);
+    if (result.returnValue != 0) return new BaseDBError("An unknown error has occured", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

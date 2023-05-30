@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, DoesNotExistError, AlreadyExistsError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { ValorantRank } from "../enums";
+import { GCADBErrorCode, ValorantRank } from "../enums";
 
 /**
  * Writes a Discord GuildMember's information on the GCA Database.
@@ -34,6 +34,10 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
 
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input('GuildId', guildId)
         .input('UserId', userId)
         .input('Username', username)
@@ -42,10 +46,7 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
         .input('ValorantRankRoleName', valorantRankRoleName)
         .execute('CreateGuildMember');
 
-    let retVal = result.returnValue;
-
-
-    switch (retVal) {
+    switch (result.returnValue) {
         case 0: 
             return;
         case 1:
@@ -56,7 +57,7 @@ async function createGuildMember(con: ConnectionPool, guildId: string, userId: s
             return new AlreadyExistsError('CreateGuildMember') as BaseDBError;
     }
 
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

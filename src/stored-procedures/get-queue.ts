@@ -1,15 +1,19 @@
 import { ConnectionPool, Transaction, NVarChar, VarChar, Int, IRecordSet } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
-import { QueueState } from "../enums";
+import { GCADBErrorCode, QueueState } from "../enums";
 import { initReq } from ".";
 
 async function getQueue(con: ConnectionPool, queueId: number, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("GetQueue") as BaseDBError;
     if (!queueId) return new NullArgError(["QueueId"], "GetQueue") as BaseDBError;
-    
+
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
 
     let result = await req.input("QueueId", queueId)
         .output("NumCaptains", Int)
@@ -32,9 +36,19 @@ async function getQueue(con: ConnectionPool, queueId: number, trans?: Transactio
         case 2:
             return new DoesNotExistError("GetQueue") as BaseDBError;
     }
-    return new BaseDBError("An unknown error has occurred", -99);
+    return new BaseDBError("An unknown error has occurred", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
+
+export type TenmansClassicQueuedUserRecord = { playerId: string, canBeCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string };
+export type TenmansClassicAvailablePlayerRecord = { playerId: string, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string };
+export type TenmansClassicTeamPlayerRecord = { playerId: string, isCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string };
+export type TenmansClassicRecords = {
+    allPlayers: TenmansClassicQueuedUserRecord[],
+    availablePlayers: TenmansClassicAvailablePlayerRecord[],
+    teamOne: TenmansClassicTeamPlayerRecord[],
+    teamTwo: TenmansClassicTeamPlayerRecord[]
+};
 
 /**
  * This function WILL crash if given a recordset from any
@@ -45,7 +59,7 @@ async function getQueue(con: ConnectionPool, queueId: number, trans?: Transactio
 export function parseGetQueueRecordsets(datum: IRecordSet<any>[]) {
 
     // Index 0: All players in queue AS: {PlayerId, GuildId, CanBeCaptain, DiscordDisplayName, ValorantDisplayName, RoleName, RoleEmote, RoleIcon}
-    let allPlayers = [] as {playerId: string, canBeCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[];
+    let allPlayers: TenmansClassicQueuedUserRecord[] = [];
     for (let i = 0; i < datum[0].length; i++) {
         allPlayers.push({
             playerId: datum[0][i].PlayerId,
@@ -60,7 +74,7 @@ export function parseGetQueueRecordsets(datum: IRecordSet<any>[]) {
     }
 
     // Index 1: Available players in queue AS { PlayerId, GuildId, DiscordDisplayName, ValorantDisplayName, RoleName, RoleEmote, RoleIcon }
-    let availablePlayers = [] as {playerId: string, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[];
+    let availablePlayers: TenmansClassicAvailablePlayerRecord[] = [];
     for (let i = 0; i < datum[0].length; i++) {
         availablePlayers.push({
             playerId: datum[0][i].PlayerId,
@@ -74,7 +88,7 @@ export function parseGetQueueRecordsets(datum: IRecordSet<any>[]) {
     }
 
     // Index 2: Team One roster AS { PlayerId, GuildId, IsCaptain, DiscordDisplayName, ValorantDisplayName, RoleName, RoleEmote, RoleIcon }
-    let teamOne = [] as {playerId: string, isCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[];
+    let teamOne: TenmansClassicTeamPlayerRecord[] = [];
     for (let i = 0; i < datum[2].length; i++) {
         teamOne.push({
             playerId: datum[2][i].PlayerId,
@@ -89,7 +103,7 @@ export function parseGetQueueRecordsets(datum: IRecordSet<any>[]) {
     }
 
     // Index 3: Team Two roster AS { PlayerId, GuildId, IsCaptain, DiscordDisplayName, ValorantDisplayName, RoleName, RoleEmote, RoleIcon }   
-    let teamTwo = [] as {playerId: string, isCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[];
+    let teamTwo: TenmansClassicTeamPlayerRecord[] = [];
     for (let i = 0; i < datum[3].length; i++) {
         teamTwo.push({
             playerId: datum[3][i].PlayerId,
@@ -108,7 +122,7 @@ export function parseGetQueueRecordsets(datum: IRecordSet<any>[]) {
         availablePlayers: availablePlayers,
         teamOne: teamOne,
         teamTwo: teamTwo
-    };
+    } as TenmansClassicRecords;
 }
 
 export default getQueue;

@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function setValName(con: ConnectionPool, valName: string, userId: string, guildId: string, trans?: Transaction) {
 
@@ -9,6 +10,11 @@ async function setValName(con: ConnectionPool, valName: string, userId: string, 
     if (!valName || !userId || !guildId) return new NullArgError(["ValName", "UserId", "GuildId"], "SetValName") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("ValName", valName)
         .input("UserId", userId)
         .input("GuildId", guildId)
@@ -22,7 +28,7 @@ async function setValName(con: ConnectionPool, valName: string, userId: string, 
         case 2:
             return new DoesNotExistError("SetValName") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default setValName;

@@ -1,9 +1,11 @@
+import { GCADBErrorCode } from "../enums";
+
 export class BaseDBError {
 
     message: string;
-    code: number;
+    code: GCADBErrorCode;
 
-    constructor(message: string, code: number) {
+    constructor(message: string, code: GCADBErrorCode) {
         this.message = message;
         this.code = code;
     }

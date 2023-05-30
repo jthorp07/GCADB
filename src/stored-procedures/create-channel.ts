@@ -21,6 +21,10 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
 
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("ChannelId", channelId)
         .input("ChannelName", channelName)
@@ -28,11 +32,9 @@ async function createChannel(con: ConnectionPool, guildId: string, channelId: st
         .input("Triggerable", triggerable)
         .execute("CreateChannel");
 
-    let ret: number = result.returnValue;
-
-    let err: BaseDBError | null;
-    err = null;
-    switch (ret) {
+    switch (result.returnValue) {
+        case 0:
+            return;
         case 1:
             return new NullArgError(["GuildId", "ChannelId", "ChannelName", "ChannelType"], "CreateChannel");
         case 2:

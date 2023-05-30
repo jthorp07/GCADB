@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { DiscordChannelName } from "../enums";
+import { DiscordChannelName, GCADBErrorCode } from "../enums";
 
 async function deleteChannelByName(con: ConnectionPool, guildId: string, channelName: DiscordChannelName, trans?: Transaction) {
 
@@ -13,6 +13,10 @@ async function deleteChannelByName(con: ConnectionPool, guildId: string, channel
 
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("ChannelName", channelName)
         .execute("DeleteChannelByName");
@@ -21,7 +25,7 @@ async function deleteChannelByName(con: ConnectionPool, guildId: string, channel
         case 0: return;
         case 1: return new NullArgError(["GuildId", "ChannelName"], "DeleteChannelByName") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql"
 import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError, AlreadyExistsError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 /**
  * Writes a new guild to the GCA Database
@@ -19,14 +20,15 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
     
     let req = initReq(con, trans);
 
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("GuildName", guildName)
         .execute("CreateGuild");
 
-    let ret: number = result.returnValue;
-
-
-    switch (ret) {
+    switch (result.returnValue) {
         case 0:
             return;
         case 1:
@@ -37,7 +39,7 @@ async function createGuild(con: ConnectionPool, guildId: string, guildName: stri
             return new AlreadyExistsError("CreateGuild");
     }
 
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default createGuild;

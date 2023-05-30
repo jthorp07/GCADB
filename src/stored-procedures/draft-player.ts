@@ -1,7 +1,7 @@
 import { ConnectionPool, Transaction, Request, NVarChar, VarChar, IRecordSet } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
-import { QueueState, QueuePool } from "../enums";
+import { QueueState, QueuePool, GCADBErrorCode } from "../enums";
 import { parseGetQueueRecordsets } from "./get-queue";
 import { initReq } from ".";
 
@@ -11,6 +11,10 @@ async function draftPlayer(con: ConnectionPool, playerId: string, guildId: strin
     if (!playerId || !guildId || !queueId) return new NullArgError(["PlayerId", "GuildId", "QueueId"], "DraftPlayer") as BaseDBError;
     
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
 
     let result = await req.input("PlayerId", playerId)
         .input("GuildId", guildId)
@@ -33,7 +37,7 @@ async function draftPlayer(con: ConnectionPool, playerId: string, guildId: strin
         case 2:
             return new DoesNotExistError("DraftPlayer") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default draftPlayer;

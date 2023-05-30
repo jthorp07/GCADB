@@ -2,7 +2,7 @@ import { ConnectionPool, IRecordSet, NVarChar, Transaction } from "mssql";
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { QueueState } from "../enums";
+import { GCADBErrorCode, QueueState } from "../enums";
 import { parseGetQueueRecordsets } from "./get-queue";
 
 async function setCaptain(con: ConnectionPool, queueId: number, capOne: string, capTwo: string, guildId: string, trans?: Transaction) {
@@ -11,6 +11,11 @@ async function setCaptain(con: ConnectionPool, queueId: number, capOne: string, 
     if (!queueId || !capOne || !capTwo || !guildId) return new NullArgError(["QueueId", "CapOne", "CapTwo", "GuildId"], "SetCaptain") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("QueueId", queueId)
         .input("CapOne", capOne)
         .input("CapTwo", capTwo)
@@ -27,7 +32,7 @@ async function setCaptain(con: ConnectionPool, queueId: number, capOne: string, 
         case 1:
             return new NullArgError(["QueueId", "CapOne", "CapTwo", "GuildId"], "SetCaptain") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default setCaptain;

@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction, Bit } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 // returns OUTPUT.EnforceRankRoles
 async function imStartingDraft(con: ConnectionPool, queueId: number, trans?: Transaction) {
@@ -10,6 +11,10 @@ async function imStartingDraft(con: ConnectionPool, queueId: number, trans?: Tra
     if (!queueId) return new NullArgError(["QueueId"], "ImManuallyStartingDraft") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
     let result = await req.input("QueueId", queueId)
         .output("EnforceRankRoles", Bit)
         .execute("ImManuallyStartingDraft");
@@ -24,7 +29,7 @@ async function imStartingDraft(con: ConnectionPool, queueId: number, trans?: Tra
         case -1:
             return {success: false, enforce: false};
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default imStartingDraft;

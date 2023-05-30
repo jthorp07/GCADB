@@ -2,6 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
+import { GCADBErrorCode } from "../enums";
 
 async function setCanBeCaptain(con: ConnectionPool, userId: string, guildId: string, canBeCaptain: boolean, trans?: Transaction) {
 
@@ -9,6 +10,11 @@ async function setCanBeCaptain(con: ConnectionPool, userId: string, guildId: str
     if (!userId || !guildId || !canBeCaptain) return new NullArgError(["UserId", "GuildId", "CanBeCaptain"], "SetCanBeCaptain") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("UserId", userId)
         .input("GuildId", guildId)
         .input("CanBeCaptain", canBeCaptain)
@@ -20,7 +26,7 @@ async function setCanBeCaptain(con: ConnectionPool, userId: string, guildId: str
         case 1:
             return new NullArgError(["UserId", "GuildId", "CanBeCaptain"], "SetCanBeCaptain") as BaseDBError;
     }
-    return new BaseDBError("An unknown error has occurred", -99);
+    return new BaseDBError("An unknown error has occurred", GCADBErrorCode.UNKNOWN_ERROR);
 
 }
 

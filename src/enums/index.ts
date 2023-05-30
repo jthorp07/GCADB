@@ -6,6 +6,7 @@ import { DiscordStaffRole } from "./db-enum-discord-staff-role";
 import { DiscordMemberRole } from "./db-enum-discord-member-role";
 import { DiscordChannelType } from "./db-enum-discord-channel-type";
 import { DiscordChannelName } from "./db-enum-discord-channel-name";
+import { GCADBErrorCode } from "./db-enum-error-code";
 
 export {
     ValorantRank,
@@ -15,7 +16,8 @@ export {
     DiscordStaffRole,
     DiscordMemberRole,
     DiscordChannelType,
-    DiscordChannelName
+    DiscordChannelName,
+    GCADBErrorCode
 }
 
 export default {
@@ -26,5 +28,6 @@ export default {
     DiscordStaffRole,
     DiscordMemberRole,
     DiscordChannelType,
-    DiscordChannelName
+    DiscordChannelName,
+    GCADBErrorCode
 }

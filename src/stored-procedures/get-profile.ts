@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction, NVarChar, IRecordSet } from "mssql"
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { ValorantRank } from "../enums";
+import { GCADBErrorCode, ValorantRank } from "../enums";
 
 async function getProfile(con: ConnectionPool, userId: string, guildId: string, trans?: Transaction) {
 
@@ -10,6 +10,11 @@ async function getProfile(con: ConnectionPool, userId: string, guildId: string, 
     if (!userId || !guildId) return new NullArgError(["UserId", "GuildId"], "GetProfile") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("UserId", userId)
         .input("GuildId", guildId)
         .output("CurrentRank", NVarChar(100))
@@ -24,7 +29,7 @@ async function getProfile(con: ConnectionPool, userId: string, guildId: string, 
         case 1:
             return new NullArgError(["UserId", "GuildId"], "GetProfile") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 function parseGetProfileRecords(recordset: IRecordSet<any>) {
@@ -38,11 +43,11 @@ function parseGetProfileRecords(recordset: IRecordSet<any>) {
         valorantRoleName: recordset[0].ValorantRoleName as string,
         hasValorantRank: recordset[0].Ranked as boolean,
         canBeCaptain: recordset[0].CanBeCaptain as boolean
-    }
+    } as GetProfileRecord;
 }
 
 export default getProfile;
-export type GetProfileRecords = {
+export type GetProfileRecord = {
     isPremium: boolean,
     isOwner: boolean,
     discordUsername: string,

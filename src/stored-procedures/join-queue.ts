@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction, Bit, Int, NVarChar, IRecordSet, VarChar } 
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { QueueState } from "../enums";
+import { GCADBErrorCode, QueueState } from "../enums";
 import { parseGetQueueRecordsets } from "./get-queue";
 
 async function joinQueue(con: ConnectionPool, userId: string, guildId: string, queueId: number, trans?: Transaction) {
@@ -11,6 +11,11 @@ async function joinQueue(con: ConnectionPool, userId: string, guildId: string, q
     if (!userId || !guildId || !queueId) return new NullArgError(["UserId", "GuildId", "QueueId"], "JoinQueue") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("UserId", userId)
         .input("GuildId", guildId)
         .input("QueueId", queueId)
@@ -38,7 +43,7 @@ async function joinQueue(con: ConnectionPool, userId: string, guildId: string, q
         case 6:
             return new BaseDBError("Target user is already in queue", 6);
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default joinQueue;

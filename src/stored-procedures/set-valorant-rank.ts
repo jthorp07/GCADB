@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import { NullArgError, NotConnectedError, DoesNotExistError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
-import { ValorantRank } from "../enums";
+import { GCADBErrorCode, ValorantRank } from "../enums";
 
 async function setValorantRank(con: ConnectionPool, guildId: string, userId: string, rank: ValorantRank, trans?: Transaction) {
 
@@ -10,6 +10,11 @@ async function setValorantRank(con: ConnectionPool, guildId: string, userId: str
     if (!userId || !guildId || !rank) return new NullArgError(["GuildId", "UserId", "Rank"], "SetValorantRank") as BaseDBError;
 
     let req = initReq(con, trans);
+
+    if (req instanceof BaseDBError) {
+        return req;
+    }
+
     let result = await req.input("GuildId", guildId)
         .input("UserId", userId)
         .input("Rank", rank)
@@ -23,7 +28,7 @@ async function setValorantRank(con: ConnectionPool, guildId: string, userId: str
         case 2:
             return new DoesNotExistError("SetValorantRank") as BaseDBError;
     }
-    return new BaseDBError("An unknown error occurred", -99);
+    return new BaseDBError("An unknown error occurred", GCADBErrorCode.UNKNOWN_ERROR);
 }
 
 export default setValorantRank;
