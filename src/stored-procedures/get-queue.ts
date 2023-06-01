@@ -28,7 +28,7 @@ async function getQueue(con: ConnectionPool, queueId: number, trans?: Transactio
                 captainCount: result.output.NumCaptains as number,
                 playerCount: result.output.PlayerCount as number,
                 queueStatus: result.output.QueueStatus as QueueState,
-                hostId: result.output.hostId as string,
+                hostId: result.output.HostId as string,
                 records: parseGetQueueRecordsets(result.recordsets as IRecordSet<any>[])
             }
         case 1:
