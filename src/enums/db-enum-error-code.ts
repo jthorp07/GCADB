@@ -8,6 +8,7 @@ export enum GCADBErrorCode {
     NULL_ARG_CONDITIONAL_ERROR=5,
 
     // Driver or database error codes
+    TRANSACTION_ERROR=-95,
     NOT_CONENCTED_ERROR=-96,
     UNKNOWN_ERROR=-99
 }
