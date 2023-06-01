@@ -2,7 +2,7 @@ import { ConnectionPool, Transaction } from "mssql";
 import Procedures from "./stored-procedures";
 import NonProcedures from "./non-procedure-functions";
 import { BaseDBError } from "./errors/base-db-error";
-import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, QueuePool, QueueState, QueueType, ValorantRank } from "./enums";
+import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, GCADBErrorCode, QueuePool, QueueState, QueueType, ValorantRank } from "./enums";
 import env from "./env-vars.config";
 import { EventEmitter } from "events"
 import { GetQueueRecords } from "./stored-procedures/draft-player";
@@ -55,7 +55,7 @@ export class GCADB extends EventEmitter {
         await newCon.connect();
         db.con = newCon;
         db.reconnecting = false;
-        console.log("Reconnected");
+        console.log("  [GCADB]: Reconnected");
       });
       return db;
     } catch (err) {
@@ -75,22 +75,30 @@ export class GCADB extends EventEmitter {
    * @param onError Error handler in case of an error when beginning the transaction
    * @returns 
    */
-  public async beginTransaction(onError: (error: Error) => Promise<void>) {
-    let trans = await this.con.transaction().begin().catch(async (err) => await onError(err));
+  public async beginTransaction(onError?: (error: Error) => Promise<void>) {
 
-    if (trans) {
-      // DBMS error handling
-      let rolledBack = false;
-      trans.on("rollback", (aborted) => {
-        if (aborted) {
-          console.log("This rollback was triggered by SQL server");
+      let trans = await this.con.transaction().begin().catch(async (err) => {
+
+        if (onError) {
+          await onError(err);
         }
-        rolledBack = true;
-        return;
+        return new BaseDBError("An error occurred creating a transaction", GCADBErrorCode.TRANSACTION_ERROR);
       });
-    }
 
-    return trans;
+
+        if (trans instanceof Transaction) {
+          // DBMS error handling
+          let rolledBack = false;
+          trans.on("rollback", (aborted) => {
+            if (aborted) {
+              console.log("This rollback was triggered by SQL server");
+            }
+            rolledBack = true;
+            return;
+          });
+        }
+
+        return trans;
   }
 
   /**
@@ -116,7 +124,8 @@ export class GCADB extends EventEmitter {
   }
 
   /**
-   * Wraps a stored procedure call 
+   * Wraps a stored procedure call and handles retries in the event
+   * of connectivity errors
    * 
    * @param proc Procedure to be called
    * @param args Arguments to give the procedure
@@ -126,14 +135,14 @@ export class GCADB extends EventEmitter {
 
     let attempt = 0;
     while (this.reconnecting && attempt <= 10) {
-      if (attempt > 0) console.log("retrying...");
+      if (attempt > 0) console.log("  [GCADB]: Retrying...");
       await waitOneSecond();
       attempt++;
     }
 
     while (attempt <= 10) {
 
-      if (attempt > 0) console.log("retrying...");
+      if (attempt > 0) console.log("  [GCADB]: Retrying...");
 
       try {
         return await proc.apply(this, args);
@@ -141,7 +150,7 @@ export class GCADB extends EventEmitter {
         console.log(err);
 
         if (!this.reconnecting) {
-          console.log("Reconnect triggered");
+          console.log("  [GCADB]: Reconnecting...");
           this.reconnecting = true;
           this.emit("reconnect");
           await waitOneSecond();
@@ -196,14 +205,13 @@ export class GCADB extends EventEmitter {
    * 
    * Returns void on success; BaseDBError on failure
    * 
-   * @param con ConnectionPool connected to the GCA Database
    * @param guildId Discord ID of target guild
    * @param userId Discord ID of target Discord user
    * @param isOwner True if target Discord user is the owner of the target Guild
    * @param username Username of target Discord user
    * @param guildDisplayName Display name of target Discord user in target guild
    * @param valorantRankRoleName Likely to be deprecated
-   * @param trans Database transaction to run this request against
+   * @param transaction Database transaction to run this request against
    * @returns Void if successful, BaseDBError if failed
    */
   public async createGuildMember(guildId: string, userId: string, isOwner: boolean, username: string, guildDisplayName: string, valorantRankRoleName: ValorantRank | null, transaction?: Transaction) {
@@ -252,6 +260,10 @@ export class GCADB extends EventEmitter {
 
   public async getRankRoles(guildId: string, transaction?: Transaction) {
     return this.callProcedure(Procedures.getRankRoles, [this.con, guildId, transaction]) as Promise<BaseDBError | ValorantRankedRolesRecord[]>
+  }
+
+  public async getTriggerableChannels(guildId: string, channelId: string, transaction?: Transaction) {
+    return this.callProcedure(Procedures.getTriggerableChannels, [this.con, guildId, channelId, transaction]) as Promise<boolean | BaseDBError>;
   }
 
   public async imManuallyStartingDraft(queueId: number, transaction?: Transaction) {
