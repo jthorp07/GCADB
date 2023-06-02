@@ -251,7 +251,7 @@ export class GCADB extends EventEmitter {
   }
 
   public async getProfile(userId: string, guildId: string, transaction?: Transaction) {
-    return this.callProcedure(Procedures.getProfile, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | { currentRank: ValorantRank, records: GetProfileRecord }>;
+    return this.callProcedure(Procedures.getProfile, [this.con, userId, guildId, transaction]) as Promise<BaseDBError | { currentRank: ValorantRank | null, records: GetProfileRecord }>;
   }
 
   public async getQueue(queueId: number, transaction?: Transaction) {
@@ -264,6 +264,10 @@ export class GCADB extends EventEmitter {
 
   public async getTriggerableChannels(guildId: string, channelId: string, transaction?: Transaction) {
     return this.callProcedure(Procedures.getTriggerableChannels, [this.con, guildId, channelId, transaction]) as Promise<boolean | BaseDBError>;
+  }
+
+  public async getUserValRank(userId: string, guildId: string, transaction?: Transaction) {
+    return this.callProcedure(Procedures.getUserValRank, [this.con, guildId, userId, transaction]) as Promise<BaseDBError | {roleEmote: string | null, roleIcon: string | null, roleName: ValorantRank | null}>;
   }
 
   public async imManuallyStartingDraft(queueId: number, transaction?: Transaction) {

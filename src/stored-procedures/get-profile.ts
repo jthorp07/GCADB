@@ -23,7 +23,7 @@ async function getProfile(con: ConnectionPool, userId: string, guildId: string, 
     switch (result.returnValue) {
         case 0:
             return {
-                currentRank: result.output.CurrentRank as ValorantRank,
+                currentRank: result.output.CurrentRank as ValorantRank | null,
                 records: parseGetProfileRecords(result.recordset)
             }
         case 1:

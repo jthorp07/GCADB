@@ -16,6 +16,7 @@ import getProfile from "./get-profile";
 import getQueue from "./get-queue";
 import getRankRoles from "./get-rank-roles";
 import getTriggerableChannels from "./get-triggerable-channels";
+import getUserValRank from "./get-user-val-rank";
 import imManuallyStartingDraft from "./im-manually-starting-draft";
 import imStartingDraft from "./im-starting-draft copy";
 import joinQueue from "./join-queue";
@@ -48,6 +49,7 @@ export default {
     getQueue,
     getRankRoles,
     getTriggerableChannels,
+    getUserValRank,
     imManuallyStartingDraft,
     imStartingDraft,
     joinQueue,
