@@ -1,5 +1,5 @@
 import { ConnectionPool, Transaction, PreparedStatement, VarChar } from "mssql"
-import { NullArgError, DoesNotExistError, NotConnectedError, DataConstraintError } from "../errors";
+import { NotConnectedError, DataConstraintError } from "../errors";
 import BaseDBError from "../errors/base-db-error";
 
 
