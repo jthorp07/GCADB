@@ -53,7 +53,6 @@ function parseRankRoles(datum: IRecordSet<any>) {
     }
 
     return (parsedRoles.length > 0 ? parsedRoles : null)
-
 }
 
 export default getRankRoles;

@@ -7,7 +7,7 @@ import { GCADBErrorCode } from "../enums";
 async function setEnforceRankRoles(con: ConnectionPool, guildId: string, enforce: boolean, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("SetEnforceRankRoles") as BaseDBError;
-    if (!guildId || !enforce) return new NullArgError(["GuildId", "Enforce"], "SetEnforceRankRoles") as BaseDBError;
+    if (!guildId || enforce == null) return new NullArgError(["GuildId", "Enforce"], "SetEnforceRankRoles") as BaseDBError;
 
     let req = initReq(con, trans);
 

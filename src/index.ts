@@ -5,7 +5,6 @@ import { BaseDBError } from "./errors/base-db-error";
 import { DiscordChannelName, DiscordChannelType, DiscordMemberRole, DiscordStaffRole, GCADBErrorCode, QueuePool, QueueState, QueueType, ValorantRank } from "./enums";
 import env from "./env-vars.config";
 import { EventEmitter } from "events"
-import { GetQueueRecords } from "./stored-procedures/draft-player";
 import { GetProfileRecord } from "./stored-procedures/get-profile";
 import { TenmansClassicRecords } from "./stored-procedures/get-queue";
 import { ValorantRankedRolesRecord } from "./stored-procedures/get-rank-roles";
@@ -231,7 +230,7 @@ export class GCADB extends EventEmitter {
   }
 
   public async draftPlayer(playerId: string, guildId: string, queueId: number, transaction?: Transaction) {
-    return this.callProcedure(Procedures.draftPlayer, [this.con, playerId, guildId, queueId, transaction]) as Promise<BaseDBError | { queueStatus: QueueState, hostId: string, team: QueuePool, records: GetQueueRecords }>;
+    return this.callProcedure(Procedures.draftPlayer, [this.con, playerId, guildId, queueId, transaction]) as Promise<BaseDBError | { queueStatus: QueueState, hostId: string, team: QueuePool, records: TenmansClassicRecords }>;
   }
 
   public async endQueue(queueId: number, transaction?: Transaction) {
@@ -322,8 +321,8 @@ export class GCADB extends EventEmitter {
     return this.callProcedure(Procedures.setValorantRank, [this.con, guildId, userId, rank, transaction]) as Promise<BaseDBError>;
   }
 
-  public async updateDiscordProfile(guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank, hasRank: boolean, transaction: Transaction) {
-    return this.callProcedure(Procedures.updateDiscordProfile, [this.con, guildId, userId, username, isOwner, guildDisplayName, currentRank, hasRank, transaction]) as Promise<BaseDBError>;
+  public async updateDiscordProfile(guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank | null, transaction: Transaction) {
+    return this.callProcedure(Procedures.updateDiscordProfile, [this.con, guildId, userId, username, isOwner, guildDisplayName, currentRank, transaction]) as Promise<BaseDBError>;
   }
 
   public async updateValorantProfile(guildId: string, userId: string, valorantDisplayName: string, transaction?: Transaction) {
@@ -348,6 +347,14 @@ export class GCADB extends EventEmitter {
    */
   public async deleteGuild(guildId: string, trans?: Transaction) {
     return NonProcedures.deleteGuild(this.con, guildId, trans);
+  }
+
+  public async getDraftPickId(userId: string, queueId: number, transaction?: Transaction) {
+    return NonProcedures.getDraftPickId(this.con, userId, queueId, transaction);
+  }
+
+  public async getMapSidePickId(userId: string, queueId: number, transaction?: Transaction) {
+    return NonProcedures.getMapSidePickId(this.con, userId, queueId, transaction);
   }
 
 }

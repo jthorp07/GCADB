@@ -4,10 +4,10 @@ import BaseDBError from "../errors/base-db-error";
 import { initReq } from ".";
 import { GCADBErrorCode, ValorantRank } from "../enums";
 
-async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank, hasRank: boolean, trans?: Transaction) {
+async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId: string, username: string, isOwner: boolean, guildDisplayName: string, currentRank: ValorantRank | null, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("UpdateDiscordProfile") as BaseDBError;
-    if (!guildId || !userId || !username || !isOwner || !guildDisplayName) return new NullArgError(["GuildId", "UserId", "Username", "IsOwner", "GuildDisplayName"], "UpdateDiscordProfile");
+    if (!guildId || !userId || !username || isOwner == null || !guildDisplayName) return new NullArgError(["GuildId", "UserId", "Username", "IsOwner", "GuildDisplayName"], "UpdateDiscordProfile");
 
     let req = initReq(con, trans);
 
@@ -20,7 +20,7 @@ async function updateDiscordProfile(con: ConnectionPool, guildId: string, userId
         .input("Username", username)
         .input("IsOwner", isOwner)
         .input("GuildDisplayName", guildDisplayName)
-        .input("CurrentRank", currentRank || null)
+        .input("CurrentRank", currentRank)
         .input("HasRank", currentRank ? true : false)
         .execute("UpdateDiscordProfile");
 

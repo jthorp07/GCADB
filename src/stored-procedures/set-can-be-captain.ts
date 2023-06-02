@@ -7,7 +7,7 @@ import { GCADBErrorCode } from "../enums";
 async function setCanBeCaptain(con: ConnectionPool, userId: string, guildId: string, canBeCaptain: boolean, trans?: Transaction) {
 
     if (!con.connected) return new NotConnectedError("SetCanBeCaptain") as BaseDBError;
-    if (!userId || !guildId || !canBeCaptain) return new NullArgError(["UserId", "GuildId", "CanBeCaptain"], "SetCanBeCaptain") as BaseDBError;
+    if (!userId || !guildId || canBeCaptain == null) return new NullArgError(["UserId", "GuildId", "CanBeCaptain"], "SetCanBeCaptain") as BaseDBError;
 
     let req = initReq(con, trans);
 

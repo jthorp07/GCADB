@@ -41,9 +41,3 @@ async function draftPlayer(con: ConnectionPool, playerId: string, guildId: strin
 }
 
 export default draftPlayer;
-export type GetQueueRecords = {
-  allPlayers: {playerId: string, canBeCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[],
-  availablePlayers: {playerId: string, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[],
-  teamOne: {playerId: string, isCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[],
-  teamTwo: {playerId: string, isCaptain: boolean, guildId: string, discordDisplayName: string, valorantDisplayName: string, roleName: string, roleEmote: string, roleIcon: string}[]
-}
