@@ -24,12 +24,14 @@ async function getDraftPickId(con: ConnectionPool, userId: string, queueId: numb
 
     await req.input("UserId", VarChar(21))
         .input("QueueId", Int)
-        .prepare("SELECT DraftPickId FROM Queues WHERE [Id]=@QueueId AND DraftPickId=@UserId");
+        .prepare("SELECT DraftPickId FROM Queues WHERE [Id]=@QueueId");
         
-    let result = await req.execute({UserId: userId, QueueId: queueId});
+    let result = await req.execute({QueueId: queueId});
+    let pickId = result.recordset[0].DraftPickId as string;
     await req.unprepare();
     return {
-        yourTurn: result.recordset.length != 0
+        yourTurn: pickId==userId,
+        pickId: pickId
     };
 
 }
